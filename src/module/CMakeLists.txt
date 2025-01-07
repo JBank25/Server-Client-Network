@@ -1,5 +1,7 @@
-add_library(Module module.cpp)
+add_library(Module 
+    src/module.cpp)
 
-enable_testing()
-
+target_include_directories(Module 
+    PUBLIC 
+    include/)
 add_subdirectory(test)
