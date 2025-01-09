@@ -9,6 +9,12 @@ enum class CustomMsgTypes : uint32_t
 
 int main()
 {
+#ifdef NDEBUG
+    std::cout << "RELEASE CONFIG" << std::endl;
+#else
+    std::cout << "DEBUG CONFIG" << std::endl;
+#endif
+
     olc::net::message<CustomMsgTypes> msg;
     msg.header.id = CustomMsgTypes::FireBullet;
     std::cout << "hello" << std::endl;
