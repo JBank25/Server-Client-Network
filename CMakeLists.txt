@@ -10,13 +10,14 @@ enable_testing()
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-add_subdirectory(src/module)
+add_subdirectory(src/)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
-                        Module
-                        asio::asio)
+                        asio::asio
+                        NetCommon
+                        )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
                     "${PROJECT_BINARY_DIR}"
-                    "${PROJECT_SOURCE_DIR}/src/module"
+                    "${PROJECT_SOURCE_DIR}/src/NetCommon"
 )

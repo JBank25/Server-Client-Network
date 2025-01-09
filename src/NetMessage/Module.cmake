@@ -1,0 +1,3 @@
+set(MODULE_TARGET "NetMessage")
+set(MODULE_TEST_TARGET "")
+set(MODULE_TEST_SUITE "")

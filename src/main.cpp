@@ -1,79 +1,33 @@
-//
-// echo_server.cpp
-// ~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2024 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
+#include <iostream>
+#include <olc_net.h>
 
-#include <asio/co_spawn.hpp>
-#include <asio/detached.hpp>
-#include <asio/io_context.hpp>
-#include <asio/ip/tcp.hpp>
-#include <asio/signal_set.hpp>
-#include <asio/write.hpp>
-#include <cstdio>
-
-#include "module.hpp"
-
-using asio::awaitable;
-using asio::co_spawn;
-using asio::detached;
-using asio::use_awaitable;
-using asio::ip::tcp;
-namespace this_coro = asio::this_coro;
-
-#if defined(ASIO_ENABLE_HANDLER_TRACKING)
-#define use_awaitable \
-    asio::use_awaitable_t(__FILE__, __LINE__, __PRETTY_FUNCTION__)
-#endif
-
-awaitable<void> echo(tcp::socket socket)
+enum class CustomMsgTypes : uint32_t
 {
-    try
-    {
-        char data[1024];
-        for (;;)
-        {
-            std::size_t n = co_await socket.async_read_some(asio::buffer(data), use_awaitable);
-            co_await async_write(socket, asio::buffer(data, n), use_awaitable);
-        }
-    }
-    catch (std::exception &e)
-    {
-        std::printf("echo Exception: %s\n", e.what());
-    }
-}
-
-awaitable<void> listener()
-{
-    auto executor = co_await this_coro::executor;
-    tcp::acceptor acceptor(executor, {tcp::v4(), 55555});
-    for (;;)
-    {
-        tcp::socket socket = co_await acceptor.async_accept(use_awaitable);
-        co_spawn(executor, echo(std::move(socket)), detached);
-    }
-}
+    FireBullet,
+    MovePlayer
+};
 
 int main()
 {
-    try
+    olc::net::message<CustomMsgTypes> msg;
+    msg.header.id = CustomMsgTypes::FireBullet;
+    std::cout << "hello" << std::endl;
+    int a = 1;
+    bool b = true;
+    float c = 3.14159f;
+
+    struct
     {
-        asio::io_context io_context(1);
+        float x;
+        float y;
+    } d[5];
 
-        asio::signal_set signals(io_context, SIGINT, SIGTERM);
-        signals.async_wait([&](auto, auto)
-                           { io_context.stop(); });
+    msg << a << b << c << d;
 
-        co_spawn(io_context, listener(), detached);
+    a = 99;
+    b = false;
+    c = 99.0f;
+    msg >> a >> b >> c >> d;
 
-        io_context.run();
-    }
-    catch (std::exception &e)
-    {
-        std::printf("Exception: %s\n", e.what());
-    }
+    return 0;
 }
