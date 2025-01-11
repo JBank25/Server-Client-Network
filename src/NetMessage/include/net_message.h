@@ -5,11 +5,19 @@ namespace olc
 {
     namespace net
     {
+        /**
+         * Header of messages. Contains a field which is the id of the message
+         * and another holding the size in bytes of the message. This header will
+         * be a fixed size.  
+         */
         template <typename T>
         struct message_header
         {
+            // Use templates to customize the message across users.
+            // Will use an enum class for this ultimately. Strongly typed 
+            // to help find bugs
             T id{};
-            uint32_t size = 0;
+            uint32_t sizeBytes = 0;
         };
 
         template <typename T>
@@ -19,7 +27,7 @@ namespace olc
             std::vector<uint8_t> body;
 
             // Returns size of entire message packet in bytes
-            size_t size() const
+            size_t sizeBytes() const
             {
                 return sizeof(message_header<T>) + body.size();
             }
@@ -27,7 +35,7 @@ namespace olc
             // Override for std::cout compatibility - produces friendly description of message
             friend std::ostream &operator<<(std::ostream &os, const message<T> &msg)
             {
-                os << "ID:" << int(msg.header.id) << " Size:" << msg.header.size;
+                os << "ID:" << int(msg.header.id) << " Size:" << msg.header.sizeBytes;
                 return os;
             }
 
@@ -54,7 +62,7 @@ namespace olc
                 std::memcpy(msg.body.data() + i, &data, sizeof(DataType));
 
                 // Recalculate the message size
-                msg.header.size = msg.size();
+                msg.header.sizeBytes = msg.sizeBytes();
 
                 // Return the target message so it can be "chained"
                 return msg;
@@ -77,11 +85,28 @@ namespace olc
                 msg.body.resize(i);
 
                 // Recalculate the message size
-                msg.header.size = msg.size();
+                msg.header.sizeBytes = msg.sizeBytes();
 
                 // Return the target message so it can be "chained"
                 return msg;
             }
+        };
+
+        template <typename T>
+        class connection;
+
+        template <typename T>
+        struct owned_message
+        {
+            std::shared_ptr<connection <T>> remote = nullptr;
+            message<T> msg;
+
+            friend std::ostream& operator <<(std::ostream& os, const owned_message<T>& msg)
+            {
+                os << msg.msg;
+                return os;
+            }
+
         };
     }
 }
