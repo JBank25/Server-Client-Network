@@ -4,7 +4,7 @@ project(asio_sandbox)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-message("Buidling with CMake version: ${CMAKE_VERSION}")
+message(STATUS "Buidling with CMake version: ${CMAKE_VERSION}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 find_package(asio REQUIRED)
