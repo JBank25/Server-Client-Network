@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
-
-mkdir src/NewModule
-mkdir src/NewModule/include
-mkdir src/NewModule/src
-mkdir src/NewModule/test
-touch src/NewModule/CMakeLists.txt src/NewModule/Module.cmake 
+BASE_MODULE_DIR="src/NewModule"
 
 MODULE_CMAKE_TEXT="set(MODULE_TARGET \"\")
 set(MODULE_TEST_TARGET \"\")
@@ -28,5 +23,11 @@ target_include_directories(\${MODULE_TARGET}
 		include/)
 "
 
-echo "$MODULE_CMAKE_TEXT" > src/NewModule/Module.cmake
-echo "$CMAKE_LISTS_TEXT" > src/NewModule/CMakeLists.txt
+mkdir "$BASE_MODULE_DIR"
+mkdir "$BASE_MODULE_DIR/include"
+mkdir "$BASE_MODULE_DIR/src" 
+mkdir "$BASE_MODULE_DIR/test"
+touch "$BASE_MODULE_DIR/CMakeLists.txt" "$BASE_MODULE_DIR/Module.cmake"
+
+echo "$MODULE_CMAKE_TEXT" > "$BASE_MODULE_DIR/Module.cmake"
+echo "$CMAKE_LISTS_TEXT" > "$BASE_MODULE_DIR/CMakeLists.txt"
