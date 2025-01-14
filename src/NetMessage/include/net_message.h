@@ -154,6 +154,7 @@ namespace olc
         template <typename T>
         struct owned_message
         {
+            // ptr to remote connection to identify the connection
             std::shared_ptr<connection <T>> remote = nullptr;
             message<T> msg;
 
