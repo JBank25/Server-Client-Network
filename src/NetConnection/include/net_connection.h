@@ -26,6 +26,37 @@ namespace olc
         public:
             bool Send(const message<T>& msg);
 
+private:
+			// ASYNC - Prime context to write a message header
+			void WriteHeader()
+			{
+			}
+
+			// ASYNC - Prime context to write a message body
+			void WriteBody()
+			{
+			}
+
+			// ASYNC - Prime context ready to read a message header
+			void ReadHeader()
+			{
+			}
+
+			// ASYNC - Prime context ready to read a message body
+			void ReadBody()
+			{
+			}
+
+			// Once a full message is received, add it to the incoming queue
+			void AddToIncomingMessageQueue()
+			{			}
+
+			// ASYNC - Send a message, connections are one-to-one so no need to specifiy
+			// the target, for a client, the target is the server and vice versa
+			void Send(const message<T>& msg)
+			{
+			}
+
 		protected:
 			// Each connection has a unique socket to a remote 
 			asio::ip::tcp::socket m_socket;
@@ -48,6 +79,7 @@ namespace olc
 			owner m_nOwnerType = owner::server;
 
 			uint32_t id = 0;
+
         };
     }
 }
