@@ -10,5 +10,8 @@ add_library(${MODULE_TARGET} INTERFACE)
 
 target_include_directories(${MODULE_TARGET}
 		INTERFACE 
-		include/)
+		include/
+		NetCommon)
 
+
+add_subdirectory(test/)

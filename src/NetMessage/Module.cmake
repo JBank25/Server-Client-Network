@@ -1,3 +1,3 @@
 set(MODULE_TARGET "NetMessage")
-set(MODULE_TEST_TARGET "")
-set(MODULE_TEST_SUITE "")
+set(MODULE_TEST_TARGET "NetMessageTests")
+set(MODULE_TEST_SUITE "ModuleNetMessageTests")

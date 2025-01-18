@@ -81,27 +81,28 @@ namespace olc
              * @note This function uses memcpy, which assumes that the DataType is trivially copyable.
              *       Use with caution for complex types.
              */
-            template <typename DataType>
-            friend message<T> &operator<<(message<T> &msg, const DataType &data)
-            {
-                // Check that the type of the data being pushed is trivially copyable
-                static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to be pushed into vector");
+			template<typename DataType>
+			friend message<T>& operator << (message<T>& msg, const DataType& data)
+			{
+				// Check that the type of the data being pushed is trivially copyable
+				static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to be pushed into vector");
 
-                // Cache current size of vector, as this will be the point we insert the data
-                size_t origBodySize = msg.body.size();
+				// Cache current size of vector, as this will be the point we insert the data
+				size_t i = msg.body.size();
 
-                // Resize the vector by the size of the data being pushed
-                msg.body.resize(msg.body.size() + sizeof(DataType));
+				// Resize the vector by the size of the data being pushed
+				msg.body.resize(msg.body.size() + sizeof(DataType));
 
-                // Physically copy the data into the newly allocated vector space
-                std::memcpy(msg.body.data() + origBodySize, &data, sizeof(DataType));
+				// Physically copy the data into the newly allocated vector space
+				std::memcpy(msg.body.data() + i, &data, sizeof(DataType));
 
-                // Recalculate the message size
-                msg.header.size = msg.size();
+				// Recalculate the message size
+				msg.header.size = msg.size();
 
-                // Return the target message so it can be "chained"
-                return msg;
-            }
+				// Return the target message so it can be "chained"
+				return msg;
+			}
+
 
             /**
              * @brief Overloads the >> operator to extract data from a message object.
