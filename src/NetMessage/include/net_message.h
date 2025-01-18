@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include "net_common.h"
 
 namespace olc
@@ -17,7 +18,7 @@ namespace olc
             // Will use an enum class for this ultimately. Strongly typed 
             // to help find bugs
             T id{};
-            uint32_t sizeBytes = 0;
+            uint32_t size = 0;
         };
 
         /**
@@ -31,9 +32,9 @@ namespace olc
             std::vector<uint8_t> body;
 
             // Returns size of entire message packet in bytes
-            size_t sizeBytes() const
+            size_t size() const
             {
-                return sizeof(message_header<T>) + body.size();
+                return body.size();
             }
 
             /**
@@ -49,7 +50,7 @@ namespace olc
              */
             friend std::ostream &operator<<(std::ostream &os, const message<T> &msg)
             {
-                os << "ID:" << int(msg.header.id) << " Size:" << msg.header.sizeBytes;
+                os << "ID:" << int(msg.header.id) << " Size:" << msg.header.size;
                 return os;
             }
 
@@ -96,7 +97,7 @@ namespace olc
                 std::memcpy(msg.body.data() + origBodySize, &data, sizeof(DataType));
 
                 // Recalculate the message size
-                msg.header.sizeBytes = msg.sizeBytes();
+                msg.header.size = msg.size();
 
                 // Return the target message so it can be "chained"
                 return msg;
@@ -125,27 +126,28 @@ namespace olc
              * @note This function extracts data from the end of the message body, assuming a LIFO (Last In, First Out) order.
              * @warning Ensure that the message contains enough data of the correct type before extraction.
              */
-            template <typename DataType>
-            friend message<T> &operator>>(message<T> &msg, DataType &data)
-            {
-                // Check that the type of the data being pushed is trivially copyable
-                static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to be pulled from vector");
+			// Pulls any POD-like data form the message buffer
+			template<typename DataType>
+			friend message<T>& operator >> (message<T>& msg, DataType& data)
+			{
+				// Check that the type of the data being pushed is trivially copyable
+				static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to be pulled from vector");
 
-                // Cache the location towards the end of the vector where the pulled data starts
-                size_t sizeAfterDataExtraction = msg.body.size() - sizeof(DataType);
+				// Cache the location towards the end of the vector where the pulled data starts
+				size_t i = msg.body.size() - sizeof(DataType);
 
-                // Physically copy the data from the vector into the user variable
-                std::memcpy(&data, msg.body.data() + sizeAfterDataExtraction, sizeof(DataType));
+				// Physically copy the data from the vector into the user variable
+				std::memcpy(&data, msg.body.data() + i, sizeof(DataType));
 
-                // Shrink the vector to remove read bytes, and reset end position
-                msg.body.resize(sizeAfterDataExtraction);
+				// Shrink the vector to remove read bytes, and reset end position
+				msg.body.resize(i);
 
-                // Recalculate the message size
-                msg.header.sizeBytes = msg.sizeBytes();
+				// Recalculate the message size
+				msg.header.size = msg.size();
 
-                // Return the target message so it can be "chained"
-                return msg;
-            }
+				// Return the target message so it can be "chained"
+				return msg;
+			}	
         };
 
         template <typename T>
