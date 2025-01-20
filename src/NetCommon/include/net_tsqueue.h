@@ -115,6 +115,8 @@ namespace olc
             std::mutex muxQueue;
             // Data stored in double ended queue
             std::deque<T> deqQueue;
+			std::condition_variable cvBlocking;
+			std::mutex muxBlocking;
         };
     }
 }

@@ -18,9 +18,13 @@ add_subdirectory(src/)
 target_link_libraries(${PROJECT_NAME} PUBLIC 
                         asio::asio
                         NetCommon
+                        NetServer
+                        NetConnection
                         )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
                     "${PROJECT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/src/NetCommon"
+                    "${PROJECT_SOURCE_DIR}/src/NetServer"
+                    "${PROJECT_SOURCE_DIR}/src/NetConnection"
 )

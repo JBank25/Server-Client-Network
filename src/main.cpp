@@ -1,39 +1,82 @@
 #include <iostream>
 #include <olc_net.h>
+#include <net_server.h>
 
 enum class CustomMsgTypes : uint32_t
 {
-    FireBullet,
-    MovePlayer
+	ServerAccept,
+	ServerDeny,
+	ServerPing,
+	MessageAll,
+	ServerMessage,
+};
+
+
+
+class CustomServer : public olc::net::server_interface<CustomMsgTypes>
+{
+public:
+	CustomServer(uint16_t nPort) : olc::net::server_interface<CustomMsgTypes>(nPort)
+	{
+
+	}
+
+protected:
+	virtual bool OnClientConnect(std::shared_ptr<olc::net::connection<CustomMsgTypes>> client)
+	{
+		olc::net::message<CustomMsgTypes> msg;
+		msg.header.id = CustomMsgTypes::ServerAccept;
+		client->Send(msg);
+		return true;
+	}
+
+	// Called when a client appears to have disconnected
+	virtual void OnClientDisconnect(std::shared_ptr<olc::net::connection<CustomMsgTypes>> client)
+	{
+		std::cout << "Removing client [" << client->GetID() << "]\n";
+	}
+
+	// Called when a message arrives
+	virtual void OnMessage(std::shared_ptr<olc::net::connection<CustomMsgTypes>> client, olc::net::message<CustomMsgTypes>& msg)
+	{
+		switch (msg.header.id)
+		{
+		case CustomMsgTypes::ServerPing:
+		{
+			std::cout << "[" << client->GetID() << "]: Server Ping\n";
+
+			// Simply bounce message back to client
+			client->Send(msg);
+		}
+		break;
+
+		case CustomMsgTypes::MessageAll:
+		{
+			std::cout << "[" << client->GetID() << "]: Message All\n";
+
+			// Construct a new message and send it to all clients
+			olc::net::message<CustomMsgTypes> msg;
+			msg.header.id = CustomMsgTypes::ServerMessage;
+			msg << client->GetID();
+			MessageAllClients(msg, client);
+
+		}
+		break;
+		}
+	}
 };
 
 int main()
 {
-#ifdef NDEBUG
-    std::cout << "RELEASE CONFIG" << std::endl;
-#else
-    std::cout << "DEBUG CONFIG" << std::endl;
-#endif
+	CustomServer server(60000); 
+	server.Start();
 
-    olc::net::message<CustomMsgTypes> msg;
-    msg.header.id = CustomMsgTypes::FireBullet;
-    std::cout << "hello" << std::endl;
-    int a = 1;
-    bool b = true;
-    float c = 3.14159f;
+	while (1)
+	{
+		server.Update(-1, true);
+	}
+	
 
-    struct
-    {
-        float x;
-        float y;
-    } d[5];
 
-    msg << a << b << c << d;
-
-    a = 99;
-    b = false;
-    c = 99.0f;
-    msg >> a >> b >> c >> d;
-
-    return 0;
+	return 0;
 }
