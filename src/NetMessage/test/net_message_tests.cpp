@@ -10,7 +10,7 @@ enum class CustomMsgTypes : uint32_t
     MovePlayer
 };
 
-TEST(ModuleTest, SampleTest)
+TEST(NetMessageTests, NetMessageInOut)
 {
     // create our custom message type
     olc::net::message<CustomMsgTypes> msg;
@@ -34,4 +34,5 @@ TEST(ModuleTest, SampleTest)
     // Example test
     EXPECT_EQ(a, a_hold);
     EXPECT_EQ(b, b_hold);
+    EXPECT_EQ(c, c_hold);
 }
