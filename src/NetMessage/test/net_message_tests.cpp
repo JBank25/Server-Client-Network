@@ -13,7 +13,7 @@ enum class CustomMsgTypes : uint32_t
 TEST(NetMessageTests, NetMessageInOut)
 {
     // create our custom message type
-    olc::net::message<CustomMsgTypes> msg;
+    net::message<CustomMsgTypes> msg;
     // Use custom enum class
     msg.header.id = CustomMsgTypes::FireBullet;
     uint32_t a = 0xFFFF0000;
