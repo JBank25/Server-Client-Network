@@ -39,6 +39,11 @@ namespace net
 		}
 
 	public:
+		/**
+		 * @brief Only relevant if the connection is a server
+		 * 
+		 * @param uid 
+		 */
 		void ConnectToClient(uint32_t uid = 0)
 		{
 			if (m_nOwnerType == owner::server)
@@ -51,6 +56,11 @@ namespace net
 			}
 		}
 
+		/**
+		 * @brief Relevant if the connection is a client
+		 * 
+		 * @param endpoints 
+		 */
 		void ConnectToServer(const asio::ip::tcp::resolver::results_type& endpoints)
 		{
 			// Only clients can connect to servers
@@ -272,14 +282,14 @@ namespace net
 		asio::ip::tcp::socket m_socket;
 
 		// This context is shared with the whole asio instance
-		asio::io_context& m_asioContext;
+		asio::io_context &m_asioContext;
 
 		// This queue holds all messages to be sent to the remote side
 		// of this connection
 		tsqueue<message<T>> m_qMessagesOut;
 
 		// This references the incoming queue of the parent object
-		tsqueue<owned_message<T>>& m_qMessagesIn;
+		tsqueue<owned_message<T>> &m_qMessagesIn;
 
 		// Incoming messages are constructed asynchronously, so we will
 		// store the part assembled message here, until it is ready
