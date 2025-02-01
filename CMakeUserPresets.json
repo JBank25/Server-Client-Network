@@ -4,7 +4,32 @@
         "conan": {}
     },
     "include": [
-        "build/Release/generators/CMakePresets.json",
-        "build/Debug/generators/CMakePresets.json"
+        "build/Release/generators/CMakePresets.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "release",
+            "inherits": "conan-release",
+            "cacheVariables": {
+                "ENABLE_UNIT_TESTING": "OFF"
+            }
+        },
+        {
+            "name": "unit-tests",
+            "inherits": "conan-release",
+            "cacheVariables": {
+                "ENABLE_UNIT_TESTING": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "unit-tests",
+            "configurePreset": "unit-tests"
+        },
+        {
+            "name": "production",
+            "configurePreset": "release"
+        }
     ]
 }
