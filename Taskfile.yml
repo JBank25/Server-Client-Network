@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - cmake --preset conan-release
+      - cmake --build --preset conan-release
+
+  build-with-unit-tests:
+    cmds:
+      - cmake --preset unit-tests
+      - cmake --build --preset unit-tests
