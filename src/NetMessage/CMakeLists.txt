@@ -13,5 +13,6 @@ target_include_directories(${MODULE_TARGET}
 		include/
 		NetCommon)
 
-
-add_subdirectory(test/)
+if(ENABLE_UNIT_TESTING)
+	add_subdirectory(test/)
+endif()
