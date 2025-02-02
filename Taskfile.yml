@@ -6,7 +6,24 @@ tasks:
       - cmake --preset conan-release
       - cmake --build --preset conan-release
 
+  debug-build:
+    cmds:
+      - cmake --preset conan-debug
+      - cmake --build --preset conan-debug
+
   build-with-unit-tests:
     cmds:
       - cmake --preset unit-tests
       - cmake --build --preset unit-tests
+
+  run:
+    dir:
+      'build/Release'
+    cmds:
+      - ./asio_sandbox
+
+  run-unit-tests:
+    dir:
+      'build/Release'
+    cmds:
+      - ctest -v
