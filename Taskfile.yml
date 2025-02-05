@@ -33,7 +33,11 @@ tasks:
       'build/Release'
     cmds:
       - ctest -v
-  
+
+  install-conan:
+    cmds:
+      - pip install conan 
+
   prep-conan-profile:
     cmds:
       - conan profile detect --force
