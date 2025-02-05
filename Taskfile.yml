@@ -32,7 +32,7 @@ tasks:
     dir:
       'build/Release'
     cmds:
-      - ctest -v
+      - ctest -V
 
   install-conan:
     cmds:
