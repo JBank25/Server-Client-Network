@@ -16,6 +16,12 @@ tasks:
       - cmake --preset unit-tests
       - cmake --build --preset unit-tests
 
+  build-all:
+    cmds:
+      - task: build
+      - task: debug-build
+      - task: build-with-unit-tests
+
   run:
     dir:
       'build/Release'
