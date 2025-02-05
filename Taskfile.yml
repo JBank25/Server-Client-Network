@@ -33,3 +33,12 @@ tasks:
       'build/Release'
     cmds:
       - ctest -v
+  
+  prep-conan-profile:
+    cmds:
+      - conan profile detect --force
+
+  prep-conan-builds:
+    cmds:
+      -  conan install . --build=missing -s build_type=Debug
+      -  conan install . --build=missing -s build_type=Release
