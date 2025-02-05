@@ -28,5 +28,4 @@ jobs:
     - name: Run tasks
       run: |
         task build-all
-        task run
         task run-unit-tests
