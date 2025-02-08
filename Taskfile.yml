@@ -2,47 +2,66 @@ version: '3'
 
 tasks:
   build:
+    desc: Build release
     cmds:
       - cmake --preset conan-release
       - cmake --build --preset conan-release
 
-  debug-build:
+  build-debug:
+    desc: Build with debug symbols
     cmds:
       - cmake --preset conan-debug
       - cmake --build --preset conan-debug
 
   build-with-unit-tests:
+    desc: Build with unit testing enabled
     cmds:
       - cmake --preset unit-tests
       - cmake --build --preset unit-tests
 
   build-all:
+    desc: Build all targets
     cmds:
       - task: build
       - task: debug-build
       - task: build-with-unit-tests
 
+  clean-release:
+    desc: Clean release build
+    cmds:
+      - cmake --build --preset conan-release --target clean
+
+  clean-debug:
+    desc: Clean debug build
+    cmds:
+      - cmake --build --preset conan-debug --target clean
+
   run:
+    desc: Run release build
     dir:
       'build/Release'
     cmds:
       - ./asio_sandbox
 
   run-unit-tests:
+    desc: Run unit tests
     dir:
       'build/Release'
     cmds:
       - ctest -V
 
-  install-conan:
+  conan-install:
+    desc: Install conan (used to handle external dependencies, asio, GTest, etc)
     cmds:
       - pip install conan 
 
-  prep-conan-profile:
+  conan-init-profile:
+    desc: Create default conan profile. See ~/.conan2/profiles/. Contains user data required to use conan
     cmds:
       - conan profile detect --force
 
-  prep-conan-builds:
+  conan-prep-builds:
+    desc: Install and build conan dependencies 
     cmds:
       -  conan install . --build=missing -s build_type=Debug
       -  conan install . --build=missing -s build_type=Release
