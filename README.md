@@ -13,10 +13,43 @@ Build the project using:
     $ task build
 ```
 
-Common tasks are managed using [Taskfiles][https://taskfile.dev/]
+Common tasks are managed using [Taskfiles](https://taskfile.dev/)
 ```
     $ task list
 ```
+
+## Project Structure
+
+### Modules
+Modules are laid out within the `src/` directory
+```
+    $ tree -L1
+    .
+    ├── CMakeLists.txt
+    ├── NetClient
+    ├── NetCommon
+    ├── NetConnection
+    ├── NetMessage
+    ├── NetServer
+    └── main.cpp
+```
+Each of these modules will, generally speaking, have a `include/` and a `test/` directory associated with them as well as a `CMakeLists.txt` and `Module.cmake` to manage the build.
+```
+    .
+    ├── CMakeLists.txt
+    ├── Module.cmake
+    ├── README.md
+    ├── include
+    └── test
+```
+### include/
+Contains the header files for the module. 
+
+### test/
+Contains unit tests using [GoogleTest](https://github.com/google/googletest) for all the headers within the `include/` directory
+
+### CMake
+`CMakeLists.txt` should generally be the same across all modules. Module specific variable names are pulled out in `Module.cmake`
 
 
 ## Messages
