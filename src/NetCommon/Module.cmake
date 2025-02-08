@@ -1,3 +1,3 @@
 set(MODULE_TARGET "NetCommon")
-set(MODULE_TEST_TARGET "")
-set(MODULE_TEST_SUITE "")
+set(MODULE_TEST_TARGET "NetTsQueueTests")
+set(MODULE_TEST_SUITE "ModuleNetTsQueueTests")

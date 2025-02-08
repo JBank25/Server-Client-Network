@@ -15,3 +15,8 @@ target_link_libraries(${MODULE_TARGET}
 target_include_directories(${MODULE_TARGET}
 		INTERFACE 
 		include/)
+
+
+if(ENABLE_UNIT_TESTING)
+	add_subdirectory(test/)
+endif()

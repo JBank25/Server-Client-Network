@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message(STATUS "Buidling with CMake version: ${CMAKE_VERSION}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Testing ENABLE_UNIT_TESTING: ${ENABLE_UNIT_TESTING}")
 
 find_package(asio REQUIRED)
 

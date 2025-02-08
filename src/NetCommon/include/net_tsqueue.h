@@ -49,7 +49,14 @@ namespace net
             return deqQueue.back();
         }
 
-        // Removes and returns item from front of Queue
+        /**
+        * @brief Removes and returns the first element from the thread-safe queue
+        * 
+        * @tparam T The type of elements stored in the queue
+        * @return T The element that was at the front of the queue (by value)
+        * @throws std::runtime_error If the queue is empty when called
+        * @note Thread-safe: Uses mutex locking to ensure safe concurrent access
+        */
         T pop_front()
         {
             std::scoped_lock lock(muxQueue);
