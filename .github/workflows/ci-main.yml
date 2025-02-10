@@ -1,4 +1,4 @@
-name: Docker Compile Check
+name: Compiles and Unit Tests
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  compile:
+  build-and-unit-test:
     runs-on: ubuntu-latest
 
     steps:
