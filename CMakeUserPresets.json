@@ -16,8 +16,22 @@
             }
         },
         {
-            "name": "unit-tests",
+            "name": "release-unit-tests",
             "inherits": "conan-release",
+            "cacheVariables": {
+                "ENABLE_UNIT_TESTING": "ON"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": "conan-debug",
+            "cacheVariables": {
+                "ENABLE_UNIT_TESTING": "OFF"
+            }
+        },
+        {
+            "name": "debug-unit-tests",
+            "inherits": "conan-debug",
             "cacheVariables": {
                 "ENABLE_UNIT_TESTING": "ON"
             }
@@ -25,12 +39,20 @@
     ],
     "buildPresets": [
         {
-            "name": "unit-tests",
-            "configurePreset": "unit-tests"
+            "name": "release-unit-tests",
+            "configurePreset": "release-unit-tests"
         },
         {
             "name": "production",
             "configurePreset": "release"
+        },
+        {
+            "name": "debug-unit-tests",
+            "configurePreset": "debug-unit-tests"
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug"
         }
     ]
 }
