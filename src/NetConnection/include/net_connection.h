@@ -78,13 +78,22 @@ namespace net
 			}
 		}
 
-
+		/**
+		 * @brief Can be called by both clients and servers and will shutdown the connection.
+		 * 
+		 */
 		void Disconnect()
 		{
 			if (IsConnected())
 				asio::post(m_asioContext, [this]() { m_socket.close(); });
 		}
 
+		/**
+		 * @brief Is the connection open and currently valid
+		 * 
+		 * @return true 
+		 * @return false 
+		 */
 		bool IsConnected() const
 		{
 			return m_socket.is_open();
