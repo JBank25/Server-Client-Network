@@ -21,9 +21,9 @@ jobs:
 
     - name: Prep conan
       run: |
-        task install-conan
-        task prep-conan-profile
-        task prep-conan-builds
+        task conan-install
+        task conan-init-profile
+        task conan-prep-builds
 
     - name: Run tasks
       run: |
