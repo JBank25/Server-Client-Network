@@ -11,7 +11,13 @@ namespace net
 	class server_interface
 	{
 	public:
-		// Create a server, ready to listen on specified port
+		/**
+		 * @brief Construct a new server interface object. m_asioAcceptor will be responsible for
+		 * accepting incoming TCP connections. The endpoint created for our acceptor is TVP v4 
+		 * on port.
+		 * 
+		 * @param port - port number on which the acceptor will bind
+		 */
 		server_interface(uint16_t port)
 			: m_asioAcceptor(m_asioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
@@ -227,10 +233,22 @@ namespace net
 		std::deque<std::shared_ptr<connection<T>>> m_deqConnections;
 
 		// Order of declaration is important - it is also the order of initialisation
+		/**
+		 * the io_context is the link to our OS's I/O services. Requests for I/O services from
+		 * our clients will ultimately be forwarded to the I/O context for the OS to perform
+		 * operations on. The io_context will translate any errors resulting from opertaions into
+		 * an system::error_code object and forwarded up to the I/O object. 
+		 */
 		asio::io_context m_asioContext;
 		std::thread m_threadContext;
 
-		// These things need an asio context
+		/**
+		 * This class forms foundation of server. It will manage incoming
+		 * connections though a three-phase lifecyle
+		 * 		1. Binding to local endpoint
+		 * 		2. Entering listening state
+		 * 		3. Accepting incoming connections
+		 */
 		asio::ip::tcp::acceptor m_asioAcceptor; // Handles new incoming connection attempts...
 
 		// Clients will be identified in the "wider system" via an ID
