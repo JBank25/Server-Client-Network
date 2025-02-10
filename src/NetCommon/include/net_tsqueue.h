@@ -50,7 +50,7 @@ namespace net
         }
 
         /**
-        * @brief Removes and returns the first element from the thread-safe queue
+        * @brief Removes and returns the first element from deqQueue in thread safe way
         * 
         * @tparam T The type of elements stored in the queue
         * @return T The element that was at the front of the queue (by value)
@@ -59,7 +59,9 @@ namespace net
         */
         T pop_front()
         {
+            // apply scoped lock
             std::scoped_lock lock(muxQueue);
+            // get object
             auto t = std::move(deqQueue.front());
             deqQueue.pop_front();
             return t;
@@ -125,7 +127,10 @@ namespace net
         }
 
     protected:
-        // mutex to protect access to queue
+        /**
+         * mutex used to force thread safety. Note above that we are essentially
+         * modifying built-in deque functions with mutex's 
+         */
         std::mutex muxQueue;
         // Data stored in double ended queue
         std::deque<T> deqQueue;
