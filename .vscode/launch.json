@@ -15,6 +15,29 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb"
+        },
+        {
+            "name": "Debug Unit Tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/src/${input:target}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "target",
+            "type": "pickString",
+            "description": "Select unit test to debug",
+            "options": [
+                "NetCommon/test/NetTsQueueTests",
+                "NetMessage/test/NetMessageTests"
+            ],
         }
     ]
 }
