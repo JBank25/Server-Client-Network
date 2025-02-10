@@ -1,30 +1,37 @@
 version: '3'
 
 tasks:
-  build:
+  build-release:
     desc: Build release
     cmds:
-      - cmake --preset conan-release
-      - cmake --build --preset conan-release
+      - cmake --preset release
+      - cmake --build --preset production
 
   build-debug:
     desc: Build with debug symbols
     cmds:
-      - cmake --preset conan-debug
-      - cmake --build --preset conan-debug
+      - cmake --preset debug
+      - cmake --build --preset debug
 
-  build-with-unit-tests:
+  build-release-with-unit-tests:
     desc: Build with unit testing enabled
     cmds:
-      - cmake --preset unit-tests
-      - cmake --build --preset unit-tests
+      - cmake --preset release-unit-tests
+      - cmake --build --preset release-unit-tests
+
+  build-debug-with-unit-tests:
+    desc: Build debug with unit testing enabled
+    cmds:
+      - cmake --preset debug-unit-tests
+      - cmake --build --preset debug-unit-tests
 
   build-all:
     desc: Build all targets
     cmds:
-      - task: build
-      - task: debug-build
-      - task: build-with-unit-tests
+      - task: build-release
+      - task: build-debug
+      - task: build-release-with-unit-tests
+      - task: build-debug-with-unit-tests
 
   clean-release:
     desc: Clean release build
