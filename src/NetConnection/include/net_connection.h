@@ -40,9 +40,10 @@ namespace net
 
 	public:
 		/**
-		 * @brief Only relevant if the connection is a server
+		 * @brief Updates the ID associated with the connection.
+		 * Only relevant if the owner is a server
 		 * 
-		 * @param uid 
+		 * @param uid - new ID for the connection
 		 */
 		void ConnectToClient(uint32_t uid = 0)
 		{
@@ -130,7 +131,9 @@ namespace net
 
 
 	private:
-		// ASYNC - Prime context to write a message header
+		/**
+		 * @brief ASYNC - Prime context to write a message header
+		 */
 		void WriteHeader()
 		{
 			// If this function is called, we know the outgoing message queue must have 
@@ -176,7 +179,10 @@ namespace net
 				});
 		}
 
-		// ASYNC - Prime context to write a message body
+		/**
+		 * @brief ASYNC - Prime context to write a message body
+		 * 
+		 */
 		void WriteBody()
 		{
 			// If this function is called, a header has just been sent, and that header
@@ -207,7 +213,13 @@ namespace net
 				});
 		}
 
-		// ASYNC - Prime context ready to read a message header
+		/**
+		 * @brief - ASYNC, primes our asio context to read in a message header. The data will be
+		 * read from m_socket and will be of size sizeof(message_header<T>). If the message header
+		 * indicates that the body size is > 0, the ReadBody function will be executed as well. If the
+		 * message header indicates size == 0 then we will simply add the incoming message to the message
+		 * queue.
+		 */
 		void ReadHeader()
 		{
 			// If this function is called, we are expecting asio to wait until it receives
@@ -246,7 +258,13 @@ namespace net
 				});
 		}
 
-		// ASYNC - Prime context ready to read a message body
+		/**
+		 * @brief - ASYNC, primes our asio context to read in a message body. The data will be
+		 * read from m_socket and will be of size m_msgTemporaryIn.body.size(). The message will be
+		 * added to the message queue assuming no errors occurred. If an error here occurs we just close
+		 * the socket.
+		 * 
+		 */
 		void ReadBody()
 		{
 			// If this function is called, a header has already been read, and that header
@@ -270,7 +288,13 @@ namespace net
 				});
 		}
 
-		// Once a full message is received, add it to the incoming queue
+		/**
+		 * @brief Adds messages to connection's message queue.
+		 * If the connection is associated with a server then we will tag the message
+		 * with a shared ptr to the connection. 
+		 * If the connection is associated with a client we can tag it with a nullptr.
+		 * 
+		 */
 		void AddToIncomingMessageQueue()
 		{				
 			// Shove it in queue, converting it to an "owned message", by initialising
@@ -282,7 +306,7 @@ namespace net
 
 			// We must now prime the asio context to receive the next message. It 
 			// wil just sit and wait for bytes to arrive, and the message construction
-			// process repeats itself. Clever huh?
+			// process repeats itself.
 			ReadHeader();
 		}
 
