@@ -90,8 +90,6 @@ void delayedFunction() {
     std::cout << "Connected to localhost on port 60000" << std::endl;
 
     // Add your communication logic here
-
-    close(sock);
 }
 
 
@@ -100,15 +98,17 @@ int main()
 	CustomServer server(60000); 
 	server.Start();
 
-    std::thread t([]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        delayedFunction();
-    });
+    // std::thread t([]() {
+        // std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        // delayedFunction();
+    // });
 
 	while (1)
 	{
 		server.Update(-1, true);
 	}
+	// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	// server.Stop();
 
 	return 0;
 }

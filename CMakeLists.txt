@@ -13,6 +13,8 @@ find_package(asio REQUIRED)
 enable_testing()
 
 add_executable(${PROJECT_NAME} src/main.cpp)
+# for testing
+add_executable(CLIENT_TESTING src/main_client.cpp)
 
 add_subdirectory(src/)
 
@@ -24,6 +26,21 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
                         )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
+                    "${PROJECT_BINARY_DIR}"
+                    "${PROJECT_SOURCE_DIR}/src/NetCommon"
+                    "${PROJECT_SOURCE_DIR}/src/NetServer"
+                    "${PROJECT_SOURCE_DIR}/src/NetConnection"
+)
+
+target_link_libraries(CLIENT_TESTING PUBLIC 
+                        asio::asio
+                        NetCommon
+                        NetServer
+                        NetConnection
+                        NetClient
+                        )
+
+target_include_directories(CLIENT_TESTING PUBLIC
                     "${PROJECT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/src/NetCommon"
                     "${PROJECT_SOURCE_DIR}/src/NetServer"
