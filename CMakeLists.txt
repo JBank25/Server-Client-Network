@@ -21,6 +21,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
                         NetCommon
                         NetServer
                         NetConnection
+                        NetClient
                         )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
