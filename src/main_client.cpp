@@ -2,6 +2,9 @@
 #include <net_common.h>
 #include "net_client.h"
 
+// Get keyboard input
+#include <curses.h>
+
 enum class CustomMsgTypes : uint32_t
 {
 	ServerAccept,
@@ -51,13 +54,45 @@ int main()
 	bool key[3] = { false, false, false };
 	bool old_key[3] = { false, false, false };
 
+	// More keyboard input stuff
+	WINDOW *win = initscr();
+	nodelay(win, TRUE);
+	int ch;
+
+
 	bool bQuit = false;
 	while (!bQuit)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		c.PingServer();
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		c.MessageAll();
+		ch = getch();
+		switch(tolower(ch))
+		{
+			case 'p':
+				c.PingServer();
+				std::cout << "\n" << std::endl;
+			break;
+			case 'm':
+				c.MessageAll();
+				std::cout << "\n" << std::endl;
+			break;
+			case 'q':
+				bQuit = true;
+				std::cout << "\n" << std::endl;
+			break;
+			default:
+			break;
+		}
+		// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		// c.PingServer();
+		// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		// c.MessageAll();
+
+
+		// Actions to take depending on key press
+		if (key[0] && !old_key[0]) c.PingServer();
+		if (key[1] && !old_key[1]) c.MessageAll();
+		if (key[2] && !old_key[2]) bQuit = true;
+
+		for (int i = 0; i < 3; i++) old_key[i] = key[i];
 
 		if (c.IsConnected())
 		{
@@ -70,7 +105,7 @@ int main()
 				case CustomMsgTypes::ServerAccept:
 				{
 					// Server has responded to a ping request				
-					std::cout << "Server Accepted Connection\n";
+					std::cout << "\rServer Accepted Connection\n";
 				}
 				break;
 
@@ -80,7 +115,7 @@ int main()
 					std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 					std::chrono::system_clock::time_point timeThen;
 					msg >> timeThen;
-					std::cout << "Ping: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
+					std::cout << "\rPing: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
 				}
 				break;
 
@@ -89,7 +124,7 @@ int main()
 					// Server has responded to a ping request	
 					uint32_t clientID;
 					msg >> clientID;
-					std::cout << "Hello from [" << clientID << "]\n";
+					std::cout << "\rHello from [" << clientID << "]\n";
 				}
 				break;
 				}

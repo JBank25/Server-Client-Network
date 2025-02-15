@@ -32,12 +32,19 @@ target_include_directories(${PROJECT_NAME} PUBLIC
                     "${PROJECT_SOURCE_DIR}/src/NetConnection"
 )
 
+# Add include directories
+include_directories(/usr/local/opt/ncurses/include)
+
+# Add link directories
+link_directories(/usr/local/opt/ncurses/lib)
+
 target_link_libraries(CLIENT_TESTING PUBLIC 
                         asio::asio
                         NetCommon
                         NetServer
                         NetConnection
                         NetClient
+                        ncurses
                         )
 
 target_include_directories(CLIENT_TESTING PUBLIC
