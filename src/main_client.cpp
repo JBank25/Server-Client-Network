@@ -1,5 +1,6 @@
 #include <iostream>
 #include <net_common.h>
+#include <string>
 #include "net_client.h"
 
 // Get keyboard input
@@ -12,6 +13,7 @@ enum class CustomMsgTypes : uint32_t
 	ServerPing,
 	MessageAll,
 	ServerMessage,
+	TextMessage,
 };
 
 
@@ -35,6 +37,15 @@ public:
 	{
 		net::message<CustomMsgTypes> msg;
 		msg.header.id = CustomMsgTypes::MessageAll;		
+		Send(msg);
+	}
+
+	void TextServer(const std::string textMessage)	
+	{
+		net::message<CustomMsgTypes> msg;
+		msg.header.id = CustomMsgTypes::TextMessage;
+
+		msg << textMessage;
 		Send(msg);
 	}
 };
@@ -72,6 +83,10 @@ int main()
 			break;
 			case 'm':
 				c.MessageAll();
+				std::cout << "\n" << std::endl;
+			break;
+			case 't':
+				c.TextServer("Hey what sup");
 				std::cout << "\n" << std::endl;
 			break;
 			case 'q':
