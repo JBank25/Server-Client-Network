@@ -23,7 +23,11 @@ namespace net
 			: m_asioAcceptor(m_asioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
 			log::Init();
-			NET_LOG_TRACE("Logger Initialized")
+			NET_LOG_TRACE("Logger Initialized TRACE ")
+			NET_LOG_INFO("Logger Initialized INFO")
+			NET_LOG_WARN("Logger Initialized WARN")
+			NET_LOG_ERROR("Logger Initialized ERROR")
+			NET_LOG_CRITICAL("Logger Initialized CRITICAL")
 		}
 
 		virtual ~server_interface()

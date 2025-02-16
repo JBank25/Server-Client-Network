@@ -4,9 +4,19 @@ project(asio_sandbox)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Allow setting a log level (default to INFO)
+if(NOT DEFINED LOG_LEVEL)
+    set(LOG_LEVEL 3)  # Default log level (INFO)
+endif()
+
+# Add LOG_LEVEL as a preprocessor definition
+add_compile_definitions(LOG_LEVEL=${LOG_LEVEL})
+
+
 message(STATUS "Buidling with CMake version: ${CMAKE_VERSION}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Testing ENABLE_UNIT_TESTING: ${ENABLE_UNIT_TESTING}")
+message(STATUS "Building with LOG_LEVEL: ${LOG_LEVEL}")
 
 find_package(asio REQUIRED)
 

@@ -3,8 +3,10 @@ version: '3'
 tasks:
   build-release:
     desc: Build release
+    vars:
+      LOG_LEVEL: '{{default "3" .LOG_LEVEL}}'
     cmds:
-      - cmake --preset release
+      - cmake --preset release -DLOG_LEVEL={{.LOG_LEVEL}}
       - cmake --build --preset production
 
   build-debug:
