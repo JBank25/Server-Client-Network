@@ -24,6 +24,7 @@ namespace net
 			: m_asioAcceptor(m_asioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
 			log::Init();
+			NET_LOG_TRACE("Logger Initialized")
 			// spdlog::set_pattern("[%^%l%$]  %v");
 		}
 
@@ -96,6 +97,7 @@ namespace net
 						std::string address = socket.remote_endpoint().address().to_string();
 						unsigned short port = socket.remote_endpoint().port();
 						// spdlog::info("[SERVER]: New Connection: {0} {1}", address, port);
+						NET_LOG_INFO("[SERVER]: New Connection: {0} {1}", address, port)
 
 						/**
 						 * Create new connection to handle the client. Here we are telling the 
@@ -125,6 +127,7 @@ namespace net
 							m_deqConnections.back()->ConnectToClient(nIDCounter++);
 
 							// spdlog::info("[SERVER]: Connection Approved - [{0}]", m_deqConnections.back()->GetID());
+							NET_LOG_INFO("[SERVER]: Connection Approved - [{0}]", m_deqConnections.back()->GetID())
 						}
 						else
 						{
