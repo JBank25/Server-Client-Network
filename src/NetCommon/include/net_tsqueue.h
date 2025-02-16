@@ -1,6 +1,5 @@
 #pragma once
 
-#include "spdlog/spdlog.h"
 #include "net_common.h"
 
 namespace net
@@ -80,7 +79,6 @@ namespace net
         // Adds an item to back of Queue
         void push_back(const T& item)
         {
-            spdlog::info("[TSQUEUE]: push_back");
             std::scoped_lock lock(muxQueue);
             deqQueue.emplace_back(std::move(item));
 
@@ -92,7 +90,6 @@ namespace net
         // Adds an item to front of Queue
         void push_front(const T& item)
         {
-            spdlog::info("[TSQUEUE]: push_front");
             std::scoped_lock lock(muxQueue);
             deqQueue.emplace_front(std::move(item));
 
@@ -129,11 +126,9 @@ namespace net
          */
         void wait()
         {
-            spdlog::info("[TSQUEUE]: wait()");
             // tight loop checking if queue is empty
             while (empty())
             {
-                spdlog::info("[TSQUEUE]: EMPTY, sleeping...");
                 /**
                  * Sleep until condition variable is told to wake up. Only
                  * push_back() and push_front() can add to the queue. Good places
@@ -142,7 +137,6 @@ namespace net
                 std::unique_lock<std::mutex> ul(muxBlocking);
                 cvBlocking.wait(ul);
             }
-            spdlog::info("[TSQUEUE]: AWAKE");
             // control returned back to calling thread upon return
         }
 
