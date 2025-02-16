@@ -12,6 +12,7 @@ enum class CustomMsgTypes : uint32_t
 	ServerPing,
 	MessageAll,
 	ServerMessage,
+	TextMessage,
 };
 
 
@@ -65,50 +66,35 @@ protected:
 
 		}
 		break;
+		case CustomMsgTypes::TextMessage:
+		{
+			std::cout << "[" << client->GetID() << "]: Text Message \n";
+			std::cout << "Message Metadata: " << msg << std::endl;
+			std::string receievedMsg;
+			msg >> receievedMsg;
+			std::cout << "Message: " << receievedMsg << std::endl;
+		}
+		break;
 		}
 	}
 };
-
-void delayedFunction() {
-    // Your original code goes here
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock == -1) {
-        std::cerr << "Failed to create socket" << std::endl;
-        return;
-    }
-
-    struct sockaddr_in server;
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server.sin_family = AF_INET;
-    server.sin_port = htons(60000);
-
-    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        std::cerr << "Connection failed" << std::endl;
-        return;
-    }
-
-    std::cout << "Connected to localhost on port 60000" << std::endl;
-
-    // Add your communication logic here
-
-    close(sock);
-}
-
 
 int main()
 {
 	CustomServer server(60000); 
 	server.Start();
 
-    std::thread t([]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        delayedFunction();
-    });
+    // std::thread t([]() {
+        // std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        // delayedFunction();
+    // });
 
 	while (1)
 	{
 		server.Update(-1, true);
 	}
+	// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	// server.Stop();
 
 	return 0;
 }

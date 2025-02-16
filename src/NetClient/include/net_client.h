@@ -11,7 +11,7 @@ namespace net
 	template <typename T>
 	class client_interface
 	{
-
+	public:
 		client_interface() : m_socket(m_context)
 		{
 
@@ -32,10 +32,11 @@ namespace net
 				asio::ip::tcp::resolver resolver(m_context);
 				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
 
-				// Create connection
+				// Create unique ptr to connection object, passing by reference incoming 
+				// message queue
 				m_connection = std::make_unique<connection<T>>(connection<T>::owner::client, m_context, asio::ip::tcp::socket(m_context), m_qMessagesIn);
 				
-				// Tell the connection object to connect to server
+				// Tell the connection object to connect to server  
 				m_connection->ConnectToServer(endpoints);
 
 				// Start Context Thread
@@ -75,7 +76,7 @@ namespace net
 		{
 			if (m_connection)
 			{
-				return m_connectionc->IsConnected();
+				return m_connection->IsConnected();
 			}
 			else
 			{
@@ -84,6 +85,12 @@ namespace net
 		}
 
 	public:
+		void Send(const message<T>& msg)
+		{
+			if (IsConnected())
+				m_connection->Send(msg);
+		}
+		
 		// Retrieve queue of messages from server
 		tsqueue<owned_message<T>>& Incoming()
 		{ 

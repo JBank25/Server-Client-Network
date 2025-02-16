@@ -1,3 +1,4 @@
+add_subdirectory(NetClient/)
 add_subdirectory(NetCommon/)
 add_subdirectory(NetMessage/)
 add_subdirectory(NetConnection/)

@@ -42,7 +42,11 @@ namespace net
 				// connect.
 				WaitForClientConnection();
 
-				// Launch the asio context in its own thread
+				/**
+				 * Launch the asio context in its own thread. If we did this prior to
+				 * WaitForClientConnection() then we would run the risk of the asio context running
+				 * out of work immediately
+				 */
 				m_threadContext = std::thread([this]() { m_asioContext.run(); });
 			}
 			catch (std::exception& e)
@@ -84,7 +88,17 @@ namespace net
 						// Display some useful(?) information
 						std::cout << "[SERVER] New Connection: " << socket.remote_endpoint() << "\n";
 
-						// Create a new connection to handle this client 
+						/**
+						 * Create new connection to handle the client. Here we are telling the 
+						 * connection it is owned by a server. This is so we can tailor how a connection
+						 * behaves depending on if it is owned by a client or server. 
+						 * 
+						 * The server's incoming message queue is also passed by reference to the new connection
+						 * ALL connections to the server will share this.
+						 * 
+						 * If server rejects the connection then it will go out of scope and be erased from
+						 * memory (motivating why we used shared_ptr's here)
+						 */
 						std::shared_ptr<connection<T>> newconn = 
 							std::make_shared<connection<T>>(connection<T>::owner::server, 
 								m_asioContext, std::move(socket), m_qMessagesIn);
@@ -123,13 +137,20 @@ namespace net
 				});
 		}
 
-		// Send a message to a specific client
+		/**
+		 * @brief - Handles messaging to a specific client. If the client is still valid this is simply
+		 * a wrapper to the Send() function. If the client is not valid then we can assmume that communication
+		 * has stopped and handle the clean removal of this connection.
+		 * 
+		 * @param client - client to be messaged
+		 * @param msg - message to send
+		 */
 		void MessageClient(std::shared_ptr<connection<T>> client, const message<T>& msg)
 		{
-			// Check client is legitimate...
+			// Check client is valid and that it is still connection
 			if (client && client->IsConnected())
 			{
-				// ...and post the message via the connection
+				// post the message via the connection
 				client->Send(msg);
 			}
 			else
@@ -148,7 +169,17 @@ namespace net
 			}
 		}
 		
-		// Send message to all clients
+		/**
+		 * @brief - Handles messaging to all clients. Will iterate over all clients in connections deque.
+		 * If the client is still valid this is simply a wrapper to the Send() function. 
+		 * If the client is not valid then we can assmume that communication
+		 * has stopped and handle the clean removal of this connection. Removal could be costly
+		 * in terms of performance AND we don't want to invalidate our iterator, thus we use a flag
+		 * to check if any invalid connections exist THEN we remove them
+		 * 
+		 * @param msg - message to send to all clients
+		 * @param pIgnoreClient - client to skip messaging, bull by default
+		 */
 		void MessageAllClients(const message<T>& msg, std::shared_ptr<connection<T>> pIgnoreClient = nullptr)
 		{
 			bool bInvalidClientExists = false;
@@ -182,7 +213,14 @@ namespace net
 					std::remove(m_deqConnections.begin(), m_deqConnections.end(), nullptr), m_deqConnections.end());
 		}
 
-		// Force server to respond to incoming messages
+		/**
+		 * @brief - Called by the user to explicitly process some messages in the queue. 
+		 * Allows user to decide when to handle incoming messages in server side application
+		 * logic. 
+		 * 
+		 * @param nMaxMessages - number of messages to process, defaults to max
+		 * @param bWait 
+		 */
 		void Update(size_t nMaxMessages = -1, bool bWait = false)
 		{
 			if (bWait) m_qMessagesIn.wait();
@@ -229,7 +267,9 @@ namespace net
 		// Thread Safe Queue for incoming message packets
 		tsqueue<owned_message<T>> m_qMessagesIn;
 
-		// Container of active validated connections
+		/**
+		 * std::deque containing shared ptr's to all connection objects.
+		 */
 		std::deque<std::shared_ptr<connection<T>>> m_deqConnections;
 
 		// Order of declaration is important - it is also the order of initialisation

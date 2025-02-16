@@ -10,6 +10,9 @@ add_library(${MODULE_TARGET} INTERFACE)
 
 target_link_libraries(${MODULE_TARGET}
 						INTERFACE
+						NetClient
+						NetConnection
+						NetServer
 						NetMessage)
 
 target_include_directories(${MODULE_TARGET}
