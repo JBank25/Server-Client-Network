@@ -37,6 +37,7 @@ namespace net
 		bool Start()
 		{
 			// spdlog::info("[SERVER]: Start()");
+			log::GetLogger()->info("[SERVER]: Start()");
 			try
 			{
 				// Issue a task to the asio context - This is important
