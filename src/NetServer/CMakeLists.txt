@@ -6,8 +6,6 @@ message("Building module test target:	 				${MODULE_TEST_TARGET}")
 message("Test Suite for ${MODULE_TARGET}: 				${MODULE_TEST_SUITE}")
 message("*****************************************************")
 
-# find_package(spdlog REQUIRED)
-
 add_library(${MODULE_TARGET} INTERFACE)
 
 target_include_directories(${MODULE_TARGET}
@@ -17,6 +15,5 @@ target_include_directories(${MODULE_TARGET}
         NetConnection
         NetMessage
         NetLog
-        # spdlog::spdlog
         )
 
