@@ -8,12 +8,5 @@ message("*****************************************************")
 
 add_library(${MODULE_TARGET} INTERFACE)
 
-target_include_directories(${MODULE_TARGET}
-        INTERFACE
-		include/
-        NetCommon
-        NetConnection
-        NetMessage
-        NetLog
-        )
-
+target_include_directories(
+  ${MODULE_TARGET} INTERFACE include/ NetCommon NetConnection NetLog NetMessage)

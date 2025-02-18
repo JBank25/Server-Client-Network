@@ -6,12 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Allow setting a log level (default to INFO)
 if(NOT DEFINED LOG_LEVEL)
-    set(LOG_LEVEL 3)  # Default log level (INFO)
+  set(LOG_LEVEL 3) # Default log level (INFO)
 endif()
 
 # Add LOG_LEVEL as a preprocessor definition
 add_compile_definitions(LOG_LEVEL=${LOG_LEVEL})
-
 
 message(STATUS "Buidling with CMake version: ${CMAKE_VERSION}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
@@ -26,18 +25,11 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 
 add_subdirectory(src/)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC 
-                        asio::asio
-                        NetCommon
-                        NetServer
-                        NetConnection
-                        NetClient
-                        NetLog
-                        )
+target_link_libraries(${PROJECT_NAME} PUBLIC asio::asio NetCommon NetServer
+                                             NetConnection NetClient NetLog)
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-                    "${PROJECT_BINARY_DIR}"
-                    "${PROJECT_SOURCE_DIR}/src/NetCommon"
-                    "${PROJECT_SOURCE_DIR}/src/NetServer"
-                    "${PROJECT_SOURCE_DIR}/src/NetConnection"
-)
+target_include_directories(
+  ${PROJECT_NAME}
+  PUBLIC "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}/src/NetCommon"
+         "${PROJECT_SOURCE_DIR}/src/NetServer"
+         "${PROJECT_SOURCE_DIR}/src/NetConnection")

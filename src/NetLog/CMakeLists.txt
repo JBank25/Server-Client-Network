@@ -10,12 +10,6 @@ find_package(spdlog REQUIRED)
 
 add_library(${MODULE_TARGET} STATIC src/net_log.cpp)
 
-target_link_libraries(${MODULE_TARGET}
-    PUBLIC
-    spdlog::spdlog
-    )
+target_link_libraries(${MODULE_TARGET} PUBLIC spdlog::spdlog)
 
-target_include_directories(${MODULE_TARGET}
-    PUBLIC
-    include/)
-
+target_include_directories(${MODULE_TARGET} PUBLIC include/)

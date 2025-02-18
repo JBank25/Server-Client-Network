@@ -8,11 +8,8 @@ message("*****************************************************")
 
 add_library(${MODULE_TARGET} INTERFACE)
 
-target_include_directories(${MODULE_TARGET}
-		INTERFACE 
-		include/
-		NetCommon)
+target_include_directories(${MODULE_TARGET} INTERFACE include/ NetCommon)
 
 if(ENABLE_UNIT_TESTING)
-	add_subdirectory(test/)
+  add_subdirectory(test/)
 endif()
