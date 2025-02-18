@@ -13,5 +13,7 @@ target_include_directories(${MODULE_TARGET}
 		include/
         NetCommon
         NetConnection
-        NetMessage)
+        NetMessage
+        NetLog
+        )
 

@@ -4,6 +4,7 @@
 #include "net_tsqueue.h"
 #include "net_message.h"
 #include "net_connection.h"
+#include "net_log.h"
 
 namespace net
 {
@@ -21,7 +22,12 @@ namespace net
 		server_interface(uint16_t port)
 			: m_asioAcceptor(m_asioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
-
+			log::Init();
+			NET_LOG_TRACE("Logger Initialized TRACE")
+			NET_LOG_INFO("Logger Initialized INFO")
+			NET_LOG_WARN("Logger Initialized WARN")
+			NET_LOG_ERROR("Logger Initialized ERROR")
+			NET_LOG_CRITICAL("Logger Initialized CRITICAL")
 		}
 
 		virtual ~server_interface()
@@ -33,6 +39,7 @@ namespace net
 		// Starts the server!
 		bool Start()
 		{
+			NET_LOG_INFO("[SERVER]: Start()");
 			try
 			{
 				// Issue a task to the asio context - This is important
@@ -52,17 +59,18 @@ namespace net
 			catch (std::exception& e)
 			{
 				// Something prohibited the server from listening
-				std::cerr << "[SERVER] Exception: " << e.what() << "\n";
+				NET_LOG_INFO("[SERVER]: Exception {0}", e.what());
 				return false;
 			}
 
-			std::cout << "[SERVER] Started!\n";
+			NET_LOG_INFO("[SERVER]: started!");
 			return true;
 		}
 
 		// Stops the server!
 		void Stop()
 		{
+			NET_LOG_INFO("[SERVER]: Stop()");
 			// Request the context to close
 			m_asioContext.stop();
 
@@ -70,7 +78,7 @@ namespace net
 			if (m_threadContext.joinable()) m_threadContext.join();
 
 			// Inform someone, anybody, if they care...
-			std::cout << "[SERVER] Stopped!\n";
+			NET_LOG_INFO("[SERVER]: Stopped");
 		}
 
 		// ASYNC - Instruct asio to wait for connection
@@ -79,6 +87,7 @@ namespace net
 			// Prime context with an instruction to wait until a socket connects. This
 			// is the purpose of an "acceptor" object. It will provide a unique socket
 			// for each incoming connection attempt
+			NET_LOG_INFO("[SERVER]: WaitForClientConnection()");
 			m_asioAcceptor.async_accept(
 				[this](std::error_code ec, asio::ip::tcp::socket socket)
 				{
@@ -86,7 +95,9 @@ namespace net
 					if (!ec)
 					{
 						// Display some useful(?) information
-						std::cout << "[SERVER] New Connection: " << socket.remote_endpoint() << "\n";
+						std::string address = socket.remote_endpoint().address().to_string();
+						unsigned short port = socket.remote_endpoint().port();
+						NET_LOG_INFO("[SERVER]: New Connection: {0} {1}", address, port)
 
 						/**
 						 * Create new connection to handle the client. Here we are telling the 
@@ -115,11 +126,11 @@ namespace net
 							// asio context to sit and wait for bytes to arrive!
 							m_deqConnections.back()->ConnectToClient(nIDCounter++);
 
-							std::cout << "[" << m_deqConnections.back()->GetID() << "] Connection Approved\n";
+							NET_LOG_INFO("[SERVER]: Connection Approved - [{0}]", m_deqConnections.back()->GetID())
 						}
 						else
 						{
-							std::cout << "[-----] Connection Denied\n";
+							NET_LOG_INFO("[SERVER]: Connection Denied");
 
 							// Connection will go out of scope with no pending tasks, so will
 							// get destroyed automagically due to the wonder of smart pointers
@@ -128,7 +139,7 @@ namespace net
 					else
 					{
 						// Error has occurred during acceptance
-						std::cout << "[SERVER] New Connection Error: " << ec.message() << "\n";
+						NET_LOG_ERROR("[SERVER]: New Connection Error: {0}", ec.message())
 					}
 
 					// Prime the asio context with more work - again simply wait for
@@ -223,6 +234,7 @@ namespace net
 		 */
 		void Update(size_t nMaxMessages = -1, bool bWait = false)
 		{
+			// call to blocking wait() function in tsqueue
 			if (bWait) m_qMessagesIn.wait();
 
 			// Process as many messages as you can up to the value

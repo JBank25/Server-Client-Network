@@ -82,6 +82,7 @@ namespace net
             std::scoped_lock lock(muxQueue);
             deqQueue.emplace_back(std::move(item));
 
+            // wake up sleeper in wait() as queue is no longer empty
             std::unique_lock<std::mutex> ul(muxBlocking);
             cvBlocking.notify_one();
         }
@@ -92,6 +93,7 @@ namespace net
             std::scoped_lock lock(muxQueue);
             deqQueue.emplace_front(std::move(item));
 
+            // wake up sleeper in wait() as queue is no longer empty
             std::unique_lock<std::mutex> ul(muxBlocking);
             cvBlocking.notify_one();
         }
@@ -117,13 +119,25 @@ namespace net
             deqQueue.clear();
         }
 
+        /**
+         * @brief - blocking function that suspends the calling object until a message
+         * is written to the queue.
+         * 
+         */
         void wait()
         {
+            // tight loop checking if queue is empty
             while (empty())
             {
+                /**
+                 * Sleep until condition variable is told to wake up. Only
+                 * push_back() and push_front() can add to the queue. Good places
+                 * to tell this thread to wake up
+                 */
                 std::unique_lock<std::mutex> ul(muxBlocking);
                 cvBlocking.wait(ul);
             }
+            // control returned back to calling thread upon return
         }
 
     protected:
@@ -134,6 +148,10 @@ namespace net
         std::mutex muxQueue;
         // Data stored in double ended queue
         std::deque<T> deqQueue;
+
+        /**
+         * 
+         */
         std::condition_variable cvBlocking;
         std::mutex muxBlocking;
     };

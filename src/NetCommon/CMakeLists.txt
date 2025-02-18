@@ -13,7 +13,8 @@ target_link_libraries(${MODULE_TARGET}
 						NetClient
 						NetConnection
 						NetServer
-						NetMessage)
+						NetMessage
+						)
 
 target_include_directories(${MODULE_TARGET}
 		INTERFACE 
