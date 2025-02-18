@@ -2,6 +2,8 @@
 
 #include "net_common.h"
 #include "net_message.h"
+#include "net_log.h"
+#include "net_server.h"
 #include "net_tsqueue.h"
 
 
@@ -27,7 +29,7 @@ namespace net
 		{
 			m_nOwnerType = parent;
 
-			if(m_nOwnerType == ownder::server)
+			if(m_nOwnerType == owner::server)
 			{
 				// If the connection is Server -> Client, then get some random data
 				// for to transform and send back for validation
@@ -347,7 +349,7 @@ namespace net
 		uint64_t scramble(uint64_t nInput)
 		{
 			uint64_t out = nInput ^ 0xDEABD0C123;
-			out = (out & 0xF0F0F0F0F0F0F0) >> 4 (out & 0xF0F0F0F0F0F0F0) << 4;
+			out = (out & 0xF0F0F0F0F0F0F0) >> 4 | (out & 0xF0F0F0F0F0F0F0) << 4;
 			return out ^ 0xC0DFEACE12345;
 		}
 		
@@ -379,14 +381,14 @@ namespace net
 
 		}
 
-		void ReadValidation(net::server_interface<T>* server = nullptr)
+		void ReadValidation(server_interface<T>* server = nullptr)
 		{
 			asio::async_read(m_socket, asio::buffer(m_nHandshakeIn, sizeof(uint64_t)),
 				[this, server](std::error_code ec, std::size_t length)
 				{						
 					if (!ec)
 					{
-						if(m_nOwnerType::server)
+						if(m_nOwnerType == owner::server)
 						{
 							NET_CONNECTION_LOG_INFO("[CONNECTION] SERVER TODO: FILL THIS IN")
 						}

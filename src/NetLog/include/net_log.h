@@ -35,7 +35,7 @@ namespace net
 
 #if LOG_LEVEL >= DEBUG_INFO
     #define NET_SERVER_LOG_INFO(...)        log::GetServerLogger()->info(__VA_ARGS__);
-    #define NET_CONNECTION_LOG_INTO(...)    log::GetConnectionLogger()->info(__VA_ARGS__);
+    #define NET_CONNECTION_LOG_INFO(...)    log::GetConnectionLogger()->info(__VA_ARGS__);
 #else
     #define NET_SERVER_LOG_INFO(...)        do {} while(0);
     #define NET_CONNECTION_LOG_INFO(...)    do {} while(0);
