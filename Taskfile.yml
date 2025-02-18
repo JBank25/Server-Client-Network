@@ -11,20 +11,26 @@ tasks:
 
   build-debug:
     desc: Build with debug symbols
+    vars:
+      LOG_LEVEL: '{{default "3" .LOG_LEVEL}}'
     cmds:
-      - cmake --preset debug
+      - cmake --preset debug -DLOG_LEVEL={{.LOG_LEVEL}}
       - cmake --build --preset debug
 
   build-release-with-unit-tests:
     desc: Build with unit testing enabled
+    vars:
+      LOG_LEVEL: '{{default "3" .LOG_LEVEL}}'
     cmds:
-      - cmake --preset release-unit-tests
+      - cmake --preset release-unit-tests -DLOG_LEVEL={{.LOG_LEVEL}}
       - cmake --build --preset release-unit-tests
 
   build-debug-with-unit-tests:
     desc: Build debug with unit testing enabled
+    vars:
+      LOG_LEVEL: '{{default "3" .LOG_LEVEL}}'
     cmds:
-      - cmake --preset debug-unit-tests
+      - cmake --preset debug-unit-tests -DLOG_LEVEL={{.LOG_LEVEL}}
       - cmake --build --preset debug-unit-tests
 
   build-all:
