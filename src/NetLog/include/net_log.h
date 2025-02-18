@@ -16,39 +16,51 @@ namespace net
     {
 
     public:
-        inline static std::shared_ptr<spdlog::logger>& GetLogger() { return s_Logger; }
+        inline static std::shared_ptr<spdlog::logger>& GetServerLogger() { return s_ServerLogger; }
+        inline static std::shared_ptr<spdlog::logger>& GetConnectionLogger() { return s_ConnectionLogger; }
         static void Init();
     private:
-        static std::shared_ptr<spdlog::logger> s_Logger;
+        static std::shared_ptr<spdlog::logger> s_ServerLogger;
+        static std::shared_ptr<spdlog::logger> s_ConnectionLogger;
     };
 };
 
 #if LOG_LEVEL >= DEBUG_TRACE
-    #define NET_LOG_TRACE(...) log::GetLogger()->trace(__VA_ARGS__);
+    #define NET_SERVER_LOG_TRACE(...)       log::GetServerLogger()->trace(__VA_ARGS__);
+    #define NET_CONNECTION_LOG_TRACE(...)   log::GetConnectionLogger()->trace(__VA_ARGS__);
 #else
-    #define NET_LOG_TRACE(...) do {} while(0);
+    #define NET_SERVER_LOG_TRACE(...)       do {} while(0);
+    #define NET_CONNECTION_LOG_TRACE(...)   do {} while(0);
 #endif
 
 #if LOG_LEVEL >= DEBUG_INFO
-    #define NET_LOG_INFO(...) log::GetLogger()->info(__VA_ARGS__);
+    #define NET_SERVER_LOG_INFO(...)        log::GetServerLogger()->info(__VA_ARGS__);
+    #define NET_CONNECTION_LOG_INTO(...)    log::GetConnectionLogger()->info(__VA_ARGS__);
 #else
-    #define NET_LOG_INFO(...) do {} while(0);
+    #define NET_SERVER_LOG_INFO(...)        do {} while(0);
+    #define NET_CONNECTION_LOG_INFO(...)    do {} while(0);
 #endif
 
 #if LOG_LEVEL >= DEBUG_WARN
-    #define NET_LOG_WARN(...) log::GetLogger()->warn(__VA_ARGS__);
+    #define NET_SERVER_LOG_WARN(...)        log::GetServerLogger()->warn(__VA_ARGS__);
+    #define NET_CONNECTION_LOG_WARN(...)    log::GetConnectionLogger()->warn(__VA_ARGS__);
 #else
-    #define NET_LOG_WARN(...) do {} while(0);
+    #define NET_SERVER_LOG_WARN(...)        do {} while(0);
+    #define NET_CONNECTION_LOG_WARN(...)    do {} while(0);
 #endif
 
 #if LOG_LEVEL >= DEBUG_ERROR
-    #define NET_LOG_ERROR(...) log::GetLogger()->error(__VA_ARGS__);
+    #define NET_SERVER_LOG_ERROR(...)       log::GetServerLogger()->error(__VA_ARGS__);
+    #define NET_CONNECTION_LOG_ERROR(...)   log::GetConnectionLogger()->error(__VA_ARGS__);
 #else
-    #define NET_LOG_ERROR(...) do {} while(0);
+    #define NET_SERVER_LOG_ERROR(...)       do {} while(0);
+    #define NET_CONNECTION_LOG_ERROR(...)   do {} while(0);
 #endif
 
 #if LOG_LEVEL >= DEBUG_CRITICAL
-    #define NET_LOG_CRITICAL(...) log::GetLogger()->critical(__VA_ARGS__);
+    #define NET_SERVER_LOG_CRITICAL(...)        log::GetServerLogger()->critical(__VA_ARGS__);
+    #define NET_CONNECTION_LOG_CRITICAL(...)    log::GetConnectionLogger()->critical(__VA_ARGS__);
 #else
-    #define NET_LOG_CRITICAL(...) do {} while(0);
+    #define NET_SERVER_LOG_CRITICAL(...)        do {} while(0);
+    #define NET_CONNECTION_LOG_CRITICAL(...)    do {} while(0);
 #endif
