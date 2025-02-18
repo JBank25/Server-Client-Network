@@ -1,6 +1,7 @@
 #pragma once
 
 #include "net_common.h"
+#include "net_log.h"
 #include "net_message.h"
 #include "net_tsqueue.h"
 
@@ -18,7 +19,8 @@ namespace net
 			server,
 			client
 		};
-
+	private:
+		#define OWNER_TYPE_TO_STRING(o) (o == owner::server) ? "Server" : "Client"
 	public:
 		// Constructor: Specify Owner, connect to context, transfer the socket
 		//				Provide reference to incoming message queue
@@ -49,6 +51,7 @@ namespace net
 		{
 			if (m_nOwnerType == owner::server)
 			{
+				NET_CONNECTION_LOG_TRACE("[CONNECTION] {0} ConnectToClient", ownerToString(m_nOwnerType))
 				if (m_socket.is_open())
 				{
 					id = uid;
@@ -67,6 +70,7 @@ namespace net
 			// Only clients can connect to servers
 			if (m_nOwnerType == owner::client)
 			{
+				// NET_CONNECTION_LOG_TRACE("[CONNECTION] {0} ConnectToServer", m_nOwnerType)
 				// Request asio attempts to connect socket to an endpoint
 				asio::async_connect(m_socket, endpoints,
 					[this](std::error_code ec, asio::ip::tcp::endpoint endpoint)
@@ -252,6 +256,8 @@ namespace net
 					{
 						// Reading form the client went wrong, most likely a disconnect
 						// has occurred. Close the socket and let the system tidy it up later.
+						// NET_CONNECTION_LOG_INFO("[CONNECTION] {0}", m_nOwnerType)
+						NET_CONNECTION_LOG_INFO("[CONNECTION] {0} Read Header Fail", OWNER_TYPE_TO_STRING(m_nOwnerType))
 						std::cout << "[" << id << "] Read Header Fail.\n";
 						m_socket.close();
 					}
@@ -309,6 +315,8 @@ namespace net
 			// process repeats itself.
 			ReadHeader();
 		}
+
+
 
 	protected:
 		// Each connection has a unique socket to a remote 
