@@ -1,4 +1,5 @@
 #include "net_message.h"
+
 #include <gtest/gtest.h>
 
 /**

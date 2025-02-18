@@ -1,6 +1,8 @@
 #pragma once
-#include <bit>
+
 #include "net_common.h"
+
+#include <bit>
 
 namespace net
 {
