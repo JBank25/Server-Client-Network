@@ -26,6 +26,22 @@ namespace net
 			: m_asioContext(asioContext), m_socket(std::move(socket)), m_qMessagesIn(qIn)
 		{
 			m_nOwnerType = parent;
+
+			if(m_nOwnerType == ownder::server)
+			{
+				// If the connection is Server -> Client, then get some random data
+				// for to transform and send back for validation
+				m_nHandshakeOut = uint64_t(std::chrono::system_clock::now().time_since_epoch().count());
+				
+				// Calculate the result for checking when the client responds.
+				m_nHandshakeCheck = scramble(m_nHandshakeOut);
+			}
+			else
+			{
+				// Connection is Client -> Server, nothing to define
+				m_nHandshakeIn = 0;
+				m_nHandshakeOut = 0;
+			}
 		}
 
 		virtual ~connection()
@@ -52,7 +68,18 @@ namespace net
 				if (m_socket.is_open())
 				{
 					id = uid;
-					ReadHeader();
+					// ReadHeader();
+
+					/**
+					 * Client is attempting to connect. We want this client to validate itself first however.
+					 * We will write out the handshake data to be validated to do this
+					 */
+					WriteValidation();
+
+					/**
+					 * Next, issue task to sit and wait asynchronously for validation data to be sent back from client
+					 */
+					ReadValidation(server);
 				}
 			}
 		}
@@ -73,7 +100,8 @@ namespace net
 					{
 						if (!ec)
 						{
-							ReadHeader();
+							// Handshaking with server has to happen
+							ReadValidation();
 						}
 					});
 			}
@@ -310,6 +338,73 @@ namespace net
 			ReadHeader();
 		}
 
+		/**
+		 * @brief Scrambling the data
+		 * 
+		 * @param nInput 
+		 * @return uint64_t 
+		 */
+		uint64_t scramble(uint64_t nInput)
+		{
+			uint64_t out = nInput ^ 0xDEABD0C123;
+			out = (out & 0xF0F0F0F0F0F0F0) >> 4 (out & 0xF0F0F0F0F0F0F0) << 4;
+			return out ^ 0xC0DFEACE12345;
+		}
+		
+		/**
+		 * @brief Asynchronous function used by both client and server to write the validation packet. This is the packet used for
+		 * handshaking between the two and establishing only valid connections
+		 * 
+		 */
+		void WriteValidation()
+		{
+			asio::async_write(m_socket, asio::buffer(m_nHandshakeOut, sizeof(uint64_t)),
+				[this](std::error_code ec, std::size_t length)
+				{
+					if (!ec)
+					{
+						// Validation data sent, clients should sit and wait for a response or closure
+						if(m_nOwnerType == owner::client)
+						{
+							NET_CONNECTION_LOG_TRACE("[CONNECTION]: CLIENT Handshake sent {0}", m_nHandshakeOut)
+							NET_CONNECTION_LOG_TRACE("[CONNECTION]: CLIENT Waiting for server response...")
+							ReadHeader();
+						}
+					}
+					else
+					{
+						m_socket.close();
+					}
+				});
+
+		}
+
+		void ReadValidation(net::server_interface<T>* server = nullptr)
+		{
+			asio::async_read(m_socket, asio::buffer(m_nHandshakeIn, sizeof(uint64_t)),
+				[this, server](std::error_code ec, std::size_t length)
+				{						
+					if (!ec)
+					{
+						if(m_nOwnerType::server)
+						{
+							NET_CONNECTION_LOG_INFO("[CONNECTION] SERVER TODO: FILL THIS IN")
+						}
+						else
+						{
+							NET_CONNECTION_LOG_INFO("[CONNECTION] CLIENT TODO: FILL THIS IN")
+
+						}
+					}
+					else
+					{
+						NET_CONNECTION_LOG_ERROR("[CONNECTION] Disconnectined in ReadValidation()")
+						m_socket.close();
+					}
+				});
+
+		}
+
 	protected:
 		// Each connection has a unique socket to a remote 
 		asio::ip::tcp::socket m_socket;
@@ -330,8 +425,15 @@ namespace net
 
 		// The "owner" decides how some of the connection behaves
 		owner m_nOwnerType = owner::server;
-
 		uint32_t id = 0;
+
+		// Handshake validation
+		// What the connection will be sending out
+		uint64_t m_nHandshakeOut = 0;
+		// What the connection has received as a result or as data to scramble
+		uint64_t m_nHandshakeIn = 0;
+		// Used by server to perform the comparison
+		uint64_t m_nHandshakeCheck = 0;
 
 	};
 }
