@@ -10,6 +10,7 @@
 namespace net
 {
 
+	// Forward declaration
 	template<typename T>
 	class server_interface;
 
