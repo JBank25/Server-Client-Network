@@ -9,6 +9,10 @@
 
 namespace net
 {
+
+	template<typename T>
+	class server_interface;
+
 	template<typename T>
 	class connection : public std::enable_shared_from_this<connection<T>>
 	{
@@ -63,7 +67,7 @@ namespace net
 		 * 
 		 * @param uid - new ID for the connection
 		 */
-		void ConnectToClient(uint32_t uid = 0)
+		void ConnectToClient(server_interface<T>* server, uint32_t uid = 0)
 		{
 			if (m_nOwnerType == owner::server)
 			{
@@ -360,7 +364,7 @@ namespace net
 		 */
 		void WriteValidation()
 		{
-			asio::async_write(m_socket, asio::buffer(m_nHandshakeOut, sizeof(uint64_t)),
+			asio::async_write(m_socket, asio::buffer(&m_nHandshakeOut, sizeof(uint64_t)),
 				[this](std::error_code ec, std::size_t length)
 				{
 					if (!ec)
@@ -383,7 +387,7 @@ namespace net
 
 		void ReadValidation(server_interface<T>* server = nullptr)
 		{
-			asio::async_read(m_socket, asio::buffer(m_nHandshakeIn, sizeof(uint64_t)),
+			asio::async_read(m_socket, asio::buffer(&m_nHandshakeIn, sizeof(uint64_t)),
 				[this, server](std::error_code ec, std::size_t length)
 				{						
 					if (!ec)
@@ -391,11 +395,28 @@ namespace net
 						if(m_nOwnerType == owner::server)
 						{
 							NET_CONNECTION_LOG_INFO("[CONNECTION] SERVER TODO: FILL THIS IN")
+							if(m_nHandshakeIn == m_nHandshakeCheck)
+							{
+								NET_CONNECTION_LOG_INFO("[CONNECTION] SERVER TODO: CLIENT SUCCESS COMPLETED PUZZLE")
+								server->OnClientValidated(this->shared_from_this());
+
+								// Sit and wait to receive data now
+								ReadHeader();
+							}
+							else
+							{
+								NET_CONNECTION_LOG_INFO("[CONNECTION] SERVER TODO: CLIENT FAILED TO COMPLETED PUZZLE")
+								// remove the connection if they fail the test
+								m_socket.close();
+							}
 						}
 						else
 						{
 							NET_CONNECTION_LOG_INFO("[CONNECTION] CLIENT TODO: FILL THIS IN")
-
+							// Clients need to transorm the input data from server
+							m_nHandshakeOut = scramble(m_nHandshakeIn);
+							// and send the result
+							WriteValidation();
 						}
 					}
 					else
