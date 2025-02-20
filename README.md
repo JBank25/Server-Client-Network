@@ -59,6 +59,8 @@ Messages in this framework are comprised of two fields:
         b. Size - size of the entire message including the header in bytes
     2. Body - payload of the message. Could be 0 or more bytes.
 
+Messages do have a notion of tagging. In some instances servers may want to respond to a specific client. To facilitate this we use the connection a client/server has to identify the message
+
 ### Header
 An enum class will be used for the header. Strong typing means we can identify a bug from invalid headers.
 
@@ -66,3 +68,161 @@ Using template, `T id{}` will allow users to customize the message and still all
 
 ### Body
 Will use a `std::vector<uint8_t>` for the body so we are always working with bytes.
+
+## Architecture
+
+## Server
+Servers will communicate with clients via a connection. A server can have many
+connections and can communicate with one at a time or all at once.
+
+The server itself will only have one queue for processing messages. It will be
+single threaded and should process the messages as they come in. 
+
+Servers differentiate themselves from clients in that they can have many
+connections.
+
+Servers must know where the message they receive came from in the event that it
+needs to respond back to that specific client. They connection is what
+identifies specific client, connections ARE the interface in which the server
+uses to communicate to clients.
+
+The server has two roles
+    1. Waiting for and handling connections/disconnections
+    2. Handl application logic (Server lends itself to user subclasses)
+
+The ASIO context associated with the server will need to wait for connections.
+This will be the work we "prime" ASIO with. Once the connection is made, a
+socket will be created, we then create a connection object to handle the socket.
+We then provide the server the opportunity to reject the connection. If we
+choose to connect then we will place the connection object into a container of
+connections, if we choose not to then we will simply go back to waiting for
+connections. 
+    1. Accept Connection
+    2. Create socket
+    3. Create connection object from socket
+    4. Choose what to do with the connection (Accept? Reject?)
+    5. If accepted, put the connection in our pool of connections
+    6. Wait for new connections
+
+Connection objects will be `shared_ptr`. We can rely on these to keep things tidy.
+
+Once a connection is established, the connection will assign some work to itself
+in reading the header. If the header has contents then a read body task will
+fire. Once the read body task has expired we have read an entire message and we
+can add it to the queue. The connection task will go back to waiting for a
+header.
+
+At a high level the server will:
+    1. Be issued a task by the asio context to sit and wait for connections - `WaitForClientConnection()`
+    2. When something does try to connect we create a new connection object `std::shared_ptr<connection<T>>` for it
+    3. We give the server a chance to decide what it wants to do with this object (accept, rejectm custom logic for this, etc)
+    4. Add the connection to the container of connections
+    5. Allocate the connection an ID.
+    6. Reprime the context with more work to do (`WaitForClientConnection()` regardless of if the connection is accepted or rejected)
+
+Servers will insist the client communicate in a speecial way to avoid bad
+connections.  The server will ask the client to solve a puzzle for it to ensure
+it is a good connection `WriteValidation()` and `ReadValidation()`. After
+successsful solving of this validation the server can go back to its regularly
+scheduled program into `ReadHeader()`. 
+
+This does change things for the `Client`, as a new handshaking is in place. 
+
+### Client Validation
+We could do a naive sort of appoach here that would stop a not very motivated
+actor. Say for instance we enforced that all new connections to send "Hello"
+prior to any sophisticated communication. 
+
+Yes, this would block some connetions but it would not take long for a malicious
+connection to connect using a dictionary attack or something like this.
+
+A better approach would be for the server to send "Hello" and for the client to
+respond with a known fixed set of bytes like "Howdy". Again, this is slightly
+better but still not great.
+
+Instead of these we will generate random data on the server side and use a function to calculate an output based on the random data
+```
+Server
+Generate RANDOM_DATA -> f(RANDOM_DATA)
+```
+
+The client will then be expected to take the random data and calculate an output 
+```
+Client
+Receive RANDOM_DATA from Server -> Calculate f(RANDOM_DATA) -> Send f(RANDOM_DATA) back to server
+```
+
+Working with random data makes it difficult for malicious actors to detect a
+pattern amongst known handshaking data like "Hello" in the examples above.
+
+The nature of the function used on both the client and server side must be a
+closely guarded secret. For example, adding 1 to the random data would be bad
+practice, should be relatively easy to break this. 
+
+## Client
+Clients have a queue associated with them which receives messages. The client will do it work and have the queue populated asyhcronously by the connection the client has. 
+
+The connection the client has will have a queue within it as well. This queue will need to send the data it has to the server so it can be processed.
+
+`Client`                    `Connection`
+    `Queue`     <-----x         `ASIO`
+    `Messages`  x----->         `Queue`
+
+The connection the client has which is receieving messages will ultimately be connected to a different connection which is connected to the server. The asio framework is the glue between the connection
+
+`Client` <----> `Connection` <----> `Connection` <----> `Server`
+                             `ASIO`
+
+It should be noted that clients can only have a single connection whereas servers can have many.
+
+Client must provide a physical queue to store messages. This is the same queue
+that will be used by the connection.  `tsqueue<owned_message<T>> m_qMessagesIn`
+See `tsqueue<owned_message<T>> &m_qMessagesIn` in Connection
+
+
+## Queue
+Clients, servers, and connections all utilize the same `Queue` class. 
+The queue must be thread safe. At any given time a queue could be accessed by the client or the server.
+
+The server has many different connections, again necessitating it be thread-safe.
+
+The implementation is essentially just putting a scoped lock around the `std::deque<T>` type.
+
+
+![alt text](image.png)
+
+
+## Connection
+The connection object is used by both clients and servers. Connections are how
+we send messages and are responsible for all the asio stuff
+
+Each connection has a socket `asio::ip::tcp::socket m_socket`. Recall that ASIO
+can not run properly and sockets can not function without an io context
+`asio::io_context &m_asioContext`, this is a reference owned by either the
+client interface or server object 
+
+Connections only contain queues of messages going out. As a result we will need
+a threadsafe queue of messages within our connection 
+`tsqueue<message<T>> m_qMessagesOut`
+
+Messages coming in to the server or the client are stored in a queue owned by
+the server or the client. The connection needs to know where that queue is. As a
+result we will create a reference to a threadsafe queue of owned_messages,
+`tsqueue<owned_message<T>> &m_qMessagesIn`
+
+A connection is "owned" by either a client or a server and on creation we will
+mark the object as such
+```
+    enum class owner
+    {
+        server,
+        client
+    };
+```
+
+`ReadHeader()` will utilize `asio::async_read()` to read from a particular socket into a buffer capable of reading a buffer in of size `message_header<T>`.
+
+## ASIO
+The ASIO context must always have work or it will shutdown.
+
+In the case of the server, we want 
