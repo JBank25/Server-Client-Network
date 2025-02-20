@@ -23,11 +23,7 @@ namespace net
 			: m_asioAcceptor(m_asioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
 			log::Init();
-			NET_SERVER_LOG_TRACE("Logger Initialized TRACE")
-			NET_SERVER_LOG_INFO("Logger Initialized INFO")
-			NET_SERVER_LOG_WARN("Logger Initialized WARN")
-			NET_SERVER_LOG_ERROR("Logger Initialized ERROR")
-			NET_SERVER_LOG_CRITICAL("Logger Initialized CRITICAL")
+			NET_SERVER_LOG_TRACE("Instance created on port: {0}", port)
 		}
 
 		virtual ~server_interface()
@@ -39,7 +35,7 @@ namespace net
 		// Starts the server!
 		bool Start()
 		{
-			NET_SERVER_LOG_INFO("[SERVER]: Start()");
+			NET_LOG_INFO("[SERVER]: Start()");
 			try
 			{
 				// Issue a task to the asio context - This is important
@@ -87,7 +83,7 @@ namespace net
 			// Prime context with an instruction to wait until a socket connects. This
 			// is the purpose of an "acceptor" object. It will provide a unique socket
 			// for each incoming connection attempt
-			NET_SERVER_LOG_INFO("[SERVER]: WaitForClientConnection()");
+			NET_SERVER_LOG_INFO("Waiting for client connection...");
 			m_asioAcceptor.async_accept(
 				[this](std::error_code ec, asio::ip::tcp::socket socket)
 				{
@@ -97,7 +93,7 @@ namespace net
 						// Display some useful(?) information
 						std::string address = socket.remote_endpoint().address().to_string();
 						unsigned short port = socket.remote_endpoint().port();
-						NET_SERVER_LOG_INFO("[SERVER]: New Connection: {0} {1}", address, port)
+						NET_SERVER_LOG_INFO("New client attempting to connect from Addr:{0} Port:{1}", address, port)
 
 						/**
 						 * Create new connection to handle the client. Here we are telling the 
@@ -111,8 +107,7 @@ namespace net
 						 * memory (motivating why we used shared_ptr's here)
 						 */
 						std::shared_ptr<connection<T>> newconn = 
-							std::make_shared<connection<T>>(connection<T>::owner::server, 
-								m_asioContext, std::move(socket), m_qMessagesIn);
+							std::make_shared<connection<T>>(connection<T>::owner::server, m_asioContext, std::move(socket), m_qMessagesIn);
 						
 						
 
@@ -124,7 +119,7 @@ namespace net
 
 							// And very important! Issue a task to the connection's
 							// asio context to sit and wait for bytes to arrive!
-							m_deqConnections.back()->ConnectToClient(nIDCounter++);
+							m_deqConnections.back()->ConnectToClient(this, nIDCounter++);
 
 							NET_SERVER_LOG_INFO("[SERVER]: Connection Approved - [{0}]", m_deqConnections.back()->GetID())
 						}
@@ -270,6 +265,13 @@ namespace net
 
 		// Called when a message arrives
 		virtual void OnMessage(std::shared_ptr<connection<T>> client, message<T>& msg)
+		{
+
+		}
+
+	public:
+		// Called after client is validated
+		virtual void OnClientValidated(std::shared_ptr<connection<T>> client)
 		{
 
 		}
