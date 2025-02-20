@@ -15,6 +15,19 @@ namespace net
 	template<typename T>
 	class server_interface;
 
+	/**
+	 * @brief Connection class used by both clients and servers to send and receive data. 
+	 * All the asio related code exists within this class. 
+	 * 
+	 * A unique socket exists for each connection. Connections can be "owned" by either
+	 * a client or server. Messages coming in to the client or server are stored in their
+	 * own queue, reference to this queue is used by the connection class. 
+	 * This class handles validation of connections as well, process differs between clients
+	 * and servers.
+	 * 
+	 * @tparam T - The type of data being used for communiction. Ex. 
+	 * class CustomClient : public net::client_interface<CustomMsgTypes>
+	 */
 	template<typename T>
 	class connection : public std::enable_shared_from_this<connection<T>>
 	{
@@ -26,14 +39,20 @@ namespace net
 			server,
 			client
 		};
+
 	private:
+		// Used for logging 
 		#define OWNER_TYPE_TO_STRING(o) (o == owner::server) ? "Server" : "Client"
+
 	public:
 		// Constructor: Specify Owner, connect to context, transfer the socket
 		//				Provide reference to incoming message queue
 		connection(owner parent, asio::io_context& asioContext, asio::ip::tcp::socket socket, tsqueue<owned_message<T>>& qIn)
 			: m_asioContext(asioContext), m_socket(std::move(socket)), m_qMessagesIn(qIn)
 		{
+			// TODO: error checking
+			NET_CONNECTION_LOG_INFO("Being created, owner is: {0}", OWNER_TYPE_TO_STRING(parent))
+
 			m_nOwnerType = parent;
 
 			if(m_nOwnerType == owner::server)
@@ -56,8 +75,12 @@ namespace net
 		virtual ~connection()
 		{}
 
-		// This ID is used system wide - its how clients will understand other clients
-		// exist across the whole system.
+		/**
+		 * @brief Returns ID of connection. Used system wide, how clients will identify other
+		 * clients across the whole system
+		 * 
+		 * @return uint32_t - connection id
+		 */
 		uint32_t GetID() const
 		{
 			return id;
@@ -65,20 +88,22 @@ namespace net
 
 	public:
 		/**
-		 * @brief Updates the ID associated with the connection.
+		 * @brief Updates the ID associated with the connection and attempts handshaking validation
+		 * of client connection
 		 * Only relevant if the owner is a server
 		 * 
+		 * @param server - ptr to server, used in ReadValidation to call OnClientConnected() after
+		 * successful connection
 		 * @param uid - new ID for the connection
 		 */
 		void ConnectToClient(server_interface<T>* server, uint32_t uid = 0)
 		{
 			if (m_nOwnerType == owner::server)
 			{
-				NET_CONNECTION_LOG_TRACE("[CONNECTION] {0} ConnectToClient", ownerToString(m_nOwnerType))
 				if (m_socket.is_open())
 				{
 					id = uid;
-					// ReadHeader();
+					NET_CONNECTION_LOG_TRACE("Server attempting to connect to client: {0}", uid)
 
 					/**
 					 * Client is attempting to connect. We want this client to validate itself first however.
@@ -86,26 +111,30 @@ namespace net
 					 */
 					WriteValidation();
 
-					/**
-					 * Next, issue task to sit and wait asynchronously for validation data to be sent back from client
-					 */
+					// Next, issue task to sit and wait asynchronously for validation data to be sent back from client
 					ReadValidation(server);
 				}
+			}
+			else
+			{
+				NET_CONNECTION_LOG_ERROR("Client: {0} attempting to connect to client", OWNER_TYPE_TO_STRING(m_nOwnerType))
 			}
 		}
 
 		/**
-		 * @brief Relevant if the connection is a client
+		 * @brief Attempts to connect client to server. ReadValidation begins the handshaking 
+		 * validation process for the client
 		 * 
-		 * @param endpoints 
+		 * Relevant if the connection is a client
+
+		 * @param endpoints - server endpoint the client socket will connect to for validation
 		 */
 		void ConnectToServer(const asio::ip::tcp::resolver::results_type& endpoints)
 		{
 			// Only clients can connect to servers
 			if (m_nOwnerType == owner::client)
 			{
-				// NET_CONNECTION_LOG_TRACE("[CONNECTION] {0} ConnectToServer", m_nOwnerType)
-				// Request asio attempts to connect socket to an endpoint
+				// Request asio attempts to connect client socket to server endpoint
 				asio::async_connect(m_socket, endpoints,
 					[this](std::error_code ec, asio::ip::tcp::endpoint endpoint)
 					{
@@ -115,6 +144,10 @@ namespace net
 							ReadValidation();
 						}
 					});
+			}
+			else
+			{
+				NET_CONNECTION_LOG_ERROR("Server: {0} attempting to connect to server", OWNER_TYPE_TO_STRING(m_nOwnerType))
 			}
 		}
 
@@ -131,15 +164,20 @@ namespace net
 		/**
 		 * @brief Is the connection open and currently valid
 		 * 
-		 * @return true 
-		 * @return false 
+		 * @return true if socket is open, else false
 		 */
 		bool IsConnected() const
 		{
 			return m_socket.is_open();
 		}
 
-		// Prime the connection to wait for incoming messages
+		/**
+		 * @brief Prime the connection to wait for incoming messages
+		 * 
+		 * TODO: Why did I create this function ??
+		 * 
+		 * @return 
+		 */
 		void StartListening()
 		{
 			
@@ -371,6 +409,7 @@ namespace net
 		 */
 		void WriteValidation()
 		{
+			NET_CONNECTION_LOG_TRACE("Write validation being done for type: {0}", OWNER_TYPE_TO_STRING(m_nOwnerType))
 			asio::async_write(m_socket, asio::buffer(&m_nHandshakeOut, sizeof(uint64_t)),
 				[this](std::error_code ec, std::size_t length)
 				{
