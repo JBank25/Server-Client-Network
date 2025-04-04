@@ -81,12 +81,14 @@ single threaded and should process the messages as they come in.
 Servers differentiate themselves from clients in that they can have many
 connections.
 
-Servers must know where the message they receive came from in the event that it
-needs to respond back to that specific client. They connection is what
-identifies specific client, connections ARE the interface in which the server
+***Servers must know where the message they receive came from*** in the event
+*that it
+needs to respond back to that specific client. ***The connection is what
+identifies specific client***, connections ARE the interface in which the server
 uses to communicate to clients.
 
-The server has two roles
+The server has two roles:
+
     1. Waiting for and handling connections/disconnections
     2. Handl application logic (Server lends itself to user subclasses)
 
@@ -97,6 +99,7 @@ We then provide the server the opportunity to reject the connection. If we
 choose to connect then we will place the connection object into a container of
 connections, if we choose not to then we will simply go back to waiting for
 connections. 
+
     1. Accept Connection
     2. Create socket
     3. Create connection object from socket
@@ -113,9 +116,10 @@ can add it to the queue. The connection task will go back to waiting for a
 header.
 
 At a high level the server will:
+
     1. Be issued a task by the asio context to sit and wait for connections - `WaitForClientConnection()`
     2. When something does try to connect we create a new connection object `std::shared_ptr<connection<T>>` for it
-    3. We give the server a chance to decide what it wants to do with this object (accept, rejectm custom logic for this, etc)
+    3. We give the server a chance to decide what it wants to do with this object (accept, reject, custom logic for this, etc)
     4. Add the connection to the container of connections
     5. Allocate the connection an ID.
     6. Reprime the context with more work to do (`WaitForClientConnection()` regardless of if the connection is accepted or rejected)
@@ -133,7 +137,7 @@ We could do a naive sort of appoach here that would stop a not very motivated
 actor. Say for instance we enforced that all new connections to send "Hello"
 prior to any sophisticated communication. 
 
-Yes, this would block some connetions but it would not take long for a malicious
+Yes, this would block some connections but it would not take long for a malicious
 connection to connect using a dictionary attack or something like this.
 
 A better approach would be for the server to send "Hello" and for the client to
