@@ -35,7 +35,7 @@ namespace net
 		// Starts the server!
 		bool Start()
 		{
-			NET_LOG_INFO("[SERVER]: Start()");
+			NET_SERVER_LOG_INFO("[SERVER]: Start()");
 			try
 			{
 				// Issue a task to the asio context - This is important

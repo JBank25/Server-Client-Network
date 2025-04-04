@@ -184,13 +184,19 @@ namespace net
 		}
 
 	public:
-		// ASYNC - Send a message, connections are one-to-one so no need to specifiy
-		// the target, for a client, the target is the server and vice versa
+		/**
+		 * @brief ASYNC Send a message, connections are one-to-one so no need to specifiy
+		 * the target, for a client, the target is the server and vice versa. Used by both
+		 * clients and servers to send messages.
+		 * 
+		 * @param msg - msg to be sent
+		 */
 		void Send(const message<T>& msg)
 		{
 			asio::post(m_asioContext,
 				[this, msg]()
 				{
+					// TODO: clarity on this comment
 					// If the queue has a message in it, then we must 
 					// assume that it is in the process of asynchronously being written.
 					// Either way add the message to the queue to be output. If no messages
