@@ -8,6 +8,6 @@ message("*****************************************************")
 
 add_library(${MODULE_TARGET} INTERFACE)
 
-target_link_libraries(${MODULE_TARGET} INTERFACE NetCommon)
+target_link_libraries(${MODULE_TARGET} INTERFACE NetCommon NetLog)
 
 target_include_directories(${MODULE_TARGET} INTERFACE include/)

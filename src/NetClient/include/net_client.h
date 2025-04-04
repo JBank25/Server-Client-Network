@@ -13,11 +13,16 @@ namespace net
 	public:
 		client_interface() : m_socket(m_context)
 		{
-
+			NET_CLIENT_LOG_INFO("created");
 		}
 
+		/**
+		 * @brief Destroy the client interface object
+		 * 
+		 */
 		virtual ~client_interface()
 		{
+			NET_CLIENT_LOG_INFO("Destroying");
 			Disconnect();
 		}
 
